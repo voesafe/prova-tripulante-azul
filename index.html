@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preparatório Azul – SAFE | Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-hero {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-hero h1 {
+      color: var(--white);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .login-hero p {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.9rem;
+    }
+    .login-form-panel { display: none; }
+    .login-form-panel.active { display: block; }
+    .input-hint { font-size: 0.78rem; color: var(--gray-400); margin-top: 0.25rem; }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-container">
+
+      <div class="login-logos">
+        <img src="Fundo transparente c.png" alt="SAFE School of Aviation" title="SAFE School of Aviation">
+        <div class="logo-sep"></div>
+        <img src="Design sem nome.png" alt="Azul Escola Recomendada" title="Escola Recomendada Azul">
+      </div>
+
+      <div class="login-hero">
+        <h1>Preparatório Azul</h1>
+        <p>Sistema de Provas Online</p>
+      </div>
+
+      <div class="login-card">
+        <div class="login-tabs">
+          <button class="login-tab active" onclick="switchTab('aluno')">✈ Aluno</button>
+          <button class="login-tab" onclick="switchTab('admin')">⚙ Administrador</button>
+        </div>
+
+        <!-- TAB ALUNO -->
+        <div id="tab-aluno" class="login-form-panel active">
+          <div class="login-form">
+            <p class="login-subtitle">Use seu e-mail e CPF (sem pontos ou traços)</p>
+
+            <div id="aluno-error" class="alert alert-danger hidden"></div>
+
+            <div class="form-group">
+              <label class="form-label" for="aluno-email">E-mail</label>
+              <input class="form-control" type="email" id="aluno-email"
+                placeholder="seuemail@email.com" autocomplete="email">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="aluno-cpf">CPF (senha)</label>
+              <input class="form-control" type="password" id="aluno-cpf"
+                placeholder="Apenas números, ex: 12345678901" maxlength="14" autocomplete="current-password">
+              <span class="input-hint">Digite somente os números do seu CPF</span>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-lg" onclick="loginAluno()">Entrar</button>
+          </div>
+        </div>
+
+        <!-- TAB ADMIN -->
+        <div id="tab-admin" class="login-form-panel">
+          <div class="login-form">
+            <p class="login-subtitle">Acesso restrito ao administrador do sistema</p>
+
+            <div id="admin-error" class="alert alert-danger hidden"></div>
+
+            <div class="form-group">
+              <label class="form-label" for="admin-user">Usuário</label>
+              <input class="form-control" type="text" id="admin-user"
+                placeholder="admin" autocomplete="username">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="admin-pass">Senha</label>
+              <input class="form-control" type="password" id="admin-pass"
+                placeholder="Senha de administrador" autocomplete="current-password">
+            </div>
+
+            <button class="btn btn-navy btn-block btn-lg" onclick="loginAdmin()">Entrar como Admin</button>
+          </div>
+        </div>
+      </div>
+
+      <p style="text-align:center; color:rgba(255,255,255,0.4); font-size:0.78rem; margin-top:1.5rem;">
+        SAFE School of Aviation &mdash; Parceria Azul Linhas Aéreas
+      </p>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/questions.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    DB.init();
+
+    // If already authenticated, redirect
+    const auth = DB.checkAuth();
+    if (auth) {
+      if (auth.type === 'admin') window.location.href = 'admin.html';
+      else window.location.href = 'student.html';
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.login-tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'aluno') || (i === 1 && tab === 'admin'));
+      });
+      document.getElementById('tab-aluno').classList.toggle('active', tab === 'aluno');
+      document.getElementById('tab-admin').classList.toggle('active', tab === 'admin');
+    }
+
+    function loginAluno() {
+      const email = document.getElementById('aluno-email').value.trim();
+      const cpf = document.getElementById('aluno-cpf').value.trim().replace(/\D/g, '');
+      const errEl = document.getElementById('aluno-error');
+
+      if (!email || !cpf) {
+        showError(errEl, 'Preencha e-mail e CPF.');
+        return;
+      }
+
+      const auth = DB.loginStudent(email, cpf);
+      if (!auth) {
+        showError(errEl, 'E-mail ou CPF incorretos. Verifique seus dados ou entre em contato com o administrador.');
+        return;
+      }
+      window.location.href = 'student.html';
+    }
+
+    function loginAdmin() {
+      const user = document.getElementById('admin-user').value.trim();
+      const pass = document.getElementById('admin-pass').value.trim();
+      const errEl = document.getElementById('admin-error');
+
+      if (!user || !pass) {
+        showError(errEl, 'Preencha usuário e senha.');
+        return;
+      }
+
+      const auth = DB.loginAdmin(user, pass);
+      if (!auth) {
+        showError(errEl, 'Usuário ou senha incorretos.');
+        return;
+      }
+      window.location.href = 'admin.html';
+    }
+
+    function showError(el, msg) {
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    // Enter key support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const tab = document.getElementById('tab-aluno').classList.contains('active') ? 'aluno' : 'admin';
+        if (tab === 'aluno') loginAluno();
+        else loginAdmin();
+      }
+    });
+  </script>
+</body>
+</html>

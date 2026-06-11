@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preparatório Azul – Aluno</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .attempt-history { margin-top: 0.75rem; }
+    .attempt-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: 0.82rem;
+      color: var(--gray-500);
+    }
+    .attempt-row:last-child { border-bottom: none; }
+    .review-section { margin-bottom: 2rem; }
+    .review-section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-400);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .review-question {
+      background: var(--white);
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--border-radius-sm);
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .review-question.correct-q { border-color: var(--success); }
+    .review-question.wrong-q { border-color: var(--danger); }
+    .review-q-text { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--gray-800); }
+    .review-options { display: flex; flex-direction: column; gap: 0.4rem; }
+    .review-opt {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+    }
+    .review-opt.correct-ans { color: var(--success); font-weight: 600; background: var(--success-bg); }
+    .review-opt.wrong-ans { color: var(--danger); font-weight: 600; background: var(--danger-bg); }
+    .review-opt .opt-marker { min-width: 1.4rem; font-weight: 700; }
+    .exam-question-block { display: none; }
+    .exam-question-block.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="main-layout" id="main-layout">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img src="Fundo transparente c.png" alt="SAFE">
+        <div class="brand-sep"></div>
+        <span class="topbar-title">Preparatório Azul</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user" id="topbar-user-name"></span>
+        <button class="btn btn-logout" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <div class="page-title" id="dash-greeting">Olá!</div>
+      <p class="page-subtitle">Selecione uma prova para iniciar. As provas liberadas aparecem com o botão de acesso.</p>
+
+      <div class="exams-grid" id="exams-grid"></div>
+    </main>
+
+    <footer class="main-footer">SAFE School of Aviation &mdash; Preparatório Azul &mdash; Todos os direitos reservados</footer>
+  </div>
+
+  <!-- ========== EXAM WARNING OVERLAY ========== -->
+  <div id="exam-warning-overlay" class="exam-warning-overlay hidden">
+    <div class="exam-warning-box">
+      <div class="warning-icon">🔒</div>
+      <h2 class="warning-title">Antes de Iniciar a Prova</h2>
+      <p class="warning-subtitle" id="warning-exam-title">Meteorologia Aeronáutica &mdash; 20 questões</p>
+
+      <div class="warning-rules">
+        <h4>⚠ A prova SERÁ INVALIDADA se você:</h4>
+        <ul>
+          <li>Pressionar ESC ou sair do modo tela cheia</li>
+          <li>Trocar de aba ou janela do navegador (Alt+Tab, Cmd+Tab)</li>
+          <li>Minimizar o navegador</li>
+          <li>Clicar fora da janela de prova</li>
+          <li>Abrir qualquer outro programa durante a prova</li>
+          <li>Desconectar da internet (em verificações)</li>
+        </ul>
+      </div>
+
+      <div class="warning-info">
+        <h4>ℹ Informações da Prova</h4>
+        <ul id="warning-exam-info">
+          <li id="wi-questions">20 questões de múltipla escolha</li>
+          <li id="wi-time">Sem limite de tempo</li>
+          <li id="wi-grading">Nota em percentual (0% a 100%)</li>
+          <li>As 20 questões são apresentadas em ordem aleatória</li>
+          <li><strong>Esta prova só pode ser realizada uma única vez</strong></li>
+        </ul>
+      </div>
+
+      <div class="warning-confirm">
+        <input type="checkbox" id="warning-check">
+        <label for="warning-check">
+          Li e entendi as regras. Estou em um local sem interrupções e pronto para iniciar a prova em tela cheia.
+        </label>
+      </div>
+
+      <div style="display:flex; gap:1rem;">
+        <button class="btn btn-outline btn-lg" style="flex:1" onclick="cancelWarning()">Cancelar</button>
+        <button class="btn btn-primary btn-lg" style="flex:1" id="btn-start-exam" onclick="startExam()">
+          🖥 Iniciar em Tela Cheia
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EXAM OVERLAY (fullscreen) ========== -->
+  <div id="exam-overlay" class="hidden">
+    <div class="exam-topbar">
+      <div class="exam-topbar-info">
+        <span class="exam-subject" id="exam-subject-name"></span>
+        <span class="exam-progress-text" id="exam-progress-text">Questão 1 de 20</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:1rem;">
+        <span class="exam-timer hidden" id="exam-timer">00:00</span>
+        <span style="color:rgba(255,255,255,0.5); font-size:0.8rem;" id="exam-answered-count">0 respondidas</span>
+      </div>
+    </div>
+
+    <div class="exam-progress-bar">
+      <div class="exam-progress-fill" id="exam-progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="exam-body" id="exam-body">
+      <!-- Questions rendered here -->
+    </div>
+
+    <div class="exam-nav">
+      <button class="btn btn-outline" id="btn-prev" onclick="prevQuestion()">← Anterior</button>
+      <div class="exam-nav-dots" id="exam-nav-dots"></div>
+      <div style="display:flex; gap:0.75rem;">
+        <button class="btn btn-outline" id="btn-next" onclick="nextQuestion()">Próxima →</button>
+        <button class="btn btn-success" id="btn-finish" onclick="confirmFinish()" style="display:none;">
+          ✓ Finalizar Prova
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EXAM RESULT OVERLAY ========== -->
+  <div id="result-overlay" class="hidden" style="position:fixed;inset:0;background:var(--gray-50);z-index:9000;overflow-y:auto;">
+    <div class="result-screen">
+      <div class="result-score-card">
+        <div class="result-score-label">Resultado da Prova</div>
+        <div class="result-score-value" id="result-score-value">0%</div>
+        <div class="result-score-detail" id="result-score-detail">0 de 0 questões corretas</div>
+        <div style="margin-top:1rem;" id="result-badge-container"></div>
+      </div>
+
+      <div id="result-review-section"></div>
+
+      <div style="text-align:center; margin-top:2rem;">
+        <button class="btn btn-primary btn-lg" onclick="closeResult()">Voltar ao Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== INVALIDATION SCREEN ========== -->
+  <div id="invalidation-screen" class="invalidation-screen hidden">
+    <div class="invalidation-box">
+      <div class="invalidation-icon">🚫</div>
+      <div class="invalidation-title">Prova Invalidada</div>
+      <div class="invalidation-sub">Sua prova foi encerrada automaticamente</div>
+      <div class="invalidation-reason" id="invalidation-reason"></div>
+      <button class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.4);" onclick="closeInvalidation()">
+        Voltar ao Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== CONFIRM FINISH MODAL ========== -->
+  <div id="confirm-modal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <span class="modal-title">Finalizar Prova</span>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-unanswered" style="margin-bottom:1rem;"></p>
+        <p>Tem certeza que deseja finalizar? <strong>Esta ação não pode ser desfeita.</strong></p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeConfirmModal()">Continuar respondendo</button>
+        <button class="btn btn-success" onclick="finishExam()">Sim, finalizar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/questions.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    // ============================================================
+    // AUTH CHECK
+    // ============================================================
+    DB.init();
+    const auth = DB.checkAuth();
+    if (!auth || auth.type !== 'student') {
+      window.location.href = 'index.html';
+    }
+
+    document.getElementById('topbar-user-name').textContent = auth.name;
+    document.getElementById('dash-greeting').textContent = `Olá, ${auth.name.split(' ')[0]}!`;
+
+    // ============================================================
+    // DASHBOARD RENDER
+    // ============================================================
+    function renderDashboard() {
+      const grid = document.getElementById('exams-grid');
+      const configs = DB.getExamConfigs();
+      const settings = DB.getSettings();
+      const attempts = DB.getStudentAttempts(auth.id);
+
+      grid.innerHTML = '';
+
+      configs.forEach(cfg => {
+        const attempt = DB.getAttempt(auth.id, cfg.subjectKey);
+        const icons = { meteorologia: '🌤', regulamentos: '📋', performance: '⚡' };
+        const icon = icons[cfg.subjectKey] || '📝';
+        const done = attempt && (attempt.status === 'completed' || attempt.status === 'invalidated');
+
+        let statusBottom = '';
+        if (!cfg.enabled) {
+          statusBottom = `<p style="font-size:0.82rem;color:var(--gray-400);margin-top:0.5rem;text-align:center;">Esta prova ainda não foi liberada pelo administrador.</p>`;
+        } else if (done && attempt.status === 'completed') {
+          const pct = (attempt.correctAnswers / attempt.totalQuestions) * 100;
+          const noteColor = pct >= 50 ? 'var(--success)' : 'var(--danger)';
+          statusBottom = `
+            <div class="exam-card-score">
+              <div class="score-label">Sua nota</div>
+              <div class="score-value" style="color:${noteColor}">${attempt.score.toFixed(1)} / 10</div>
+            </div>
+            <p style="font-size:0.82rem;color:var(--gray-400);text-align:center;margin-top:0.5rem;">
+              ${attempt.correctAnswers} de ${attempt.totalQuestions} corretas &mdash; ${new Date(attempt.finishedAt).toLocaleDateString('pt-BR')}
+            </p>`;
+        } else if (done && attempt.status === 'invalidated') {
+          statusBottom = `
+            <div class="alert alert-danger" style="margin-top:0.75rem;">
+              <span>🚫</span>
+              <span><strong>Prova invalidada.</strong> Entre em contato com o administrador.</span>
+            </div>`;
+        } else {
+          statusBottom = `<button class="btn btn-primary btn-block mt-2" onclick="openWarning('${cfg.id}')">✈ Iniciar Prova</button>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = `exam-card ${!cfg.enabled ? 'locked' : ''}`;
+        card.innerHTML = `
+          <div class="exam-card-header">
+            <div class="exam-card-icon">${icon}</div>
+            <div style="display:flex;justify-content:space-between;align-items:start;">
+              <div class="exam-card-title">${cfg.name}</div>
+              ${done
+                ? (attempt.status === 'completed'
+                    ? '<span class="badge badge-success">✓ Realizada</span>'
+                    : '<span class="badge badge-danger">Invalidada</span>')
+                : (cfg.enabled
+                    ? '<span class="badge badge-success">Liberada</span>'
+                    : '<span class="badge badge-locked">🔒 Aguardando</span>')}
+            </div>
+          </div>
+          <div class="exam-card-body">
+            <div class="exam-card-meta">
+              <span class="exam-meta-item">📝 20 questões</span>
+              ${cfg.timeLimit > 0 ? `<span class="exam-meta-item">⏱ ${cfg.timeLimit} min</span>` : ''}
+              <span class="exam-meta-item" style="color:var(--warning);">⚠ Única tentativa</span>
+            </div>
+            ${statusBottom}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    renderDashboard();
+
+    // ============================================================
+    // EXAM STATE
+    // ============================================================
+    let currentExamId = null;
+    let currentAttemptId = null;
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let examAnswers = {};
+    let examActive = false;
+    let timerInterval = null;
+    let timeRemaining = 0;
+    let fullscreenChangeHandled = false;
+
+    // ============================================================
+    // EXAM WARNING
+    // ============================================================
+    function openWarning(examId) {
+      const cfg = DB.getExamConfig(examId);
+      currentExamId = examId;
+
+      document.getElementById('warning-exam-title').textContent =
+        `${cfg.name} — 20 questões`;
+
+      document.getElementById('wi-questions').textContent = '20 questões de múltipla escolha';
+      document.getElementById('wi-time').textContent =
+        cfg.timeLimit > 0 ? `Tempo limite: ${cfg.timeLimit} minutos` : 'Sem limite de tempo';
+      document.getElementById('wi-grading').textContent = 'Nota de 0 a 10';
+
+      document.getElementById('warning-check').checked = false;
+      document.getElementById('exam-warning-overlay').classList.remove('hidden');
+    }
+
+    function cancelWarning() {
+      document.getElementById('exam-warning-overlay').classList.add('hidden');
+      currentExamId = null;
+    }
+
+    // ============================================================
+    // START EXAM
+    // ============================================================
+    function startExam() {
+      if (!document.getElementById('warning-check').checked) {
+        showToast('Você precisa confirmar que leu as regras antes de iniciar.', 'warning');
+        return;
+      }
+
+      const cfg = DB.getExamConfig(currentExamId);
+      if (!cfg || !cfg.enabled) {
+        showToast('Esta prova não está disponível.', 'error');
+        return;
+      }
+
+      // Guard: no retries allowed
+      if (!DB.canStartExam(auth.id, cfg.subjectKey)) {
+        showToast('Esta prova já foi realizada e não pode ser repetida.', 'error');
+        cancelWarning();
+        return;
+      }
+
+      // All 20 questions, shuffled in order (options order also shuffled)
+      const questions = DB.getShuffledQuestions(cfg.subjectKey);
+
+      if (questions.length === 0) {
+        showToast('Não há questões disponíveis para esta prova.', 'error');
+        return;
+      }
+
+      currentQuestions = questions.map(q => {
+        const shuffledOpts = [...q.options];
+        const correctText = shuffledOpts[q.correct];
+        for (let i = shuffledOpts.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledOpts[i], shuffledOpts[j]] = [shuffledOpts[j], shuffledOpts[i]];
+        }
+        const newCorrect = shuffledOpts.indexOf(correctText);
+        return { ...q, options: shuffledOpts, correct: newCorrect };
+      });
+
+      examAnswers = {};
+      currentQuestionIndex = 0;
+
+      // Create attempt record
+      const attempt = DB.createAttempt(auth.id, currentExamId, cfg.subjectKey, currentQuestions);
+      currentAttemptId = attempt.id;
+
+      // Request fullscreen
+      document.getElementById('exam-warning-overlay').classList.add('hidden');
+
+      const requestFs = document.documentElement.requestFullscreen
+        || document.documentElement.webkitRequestFullscreen
+        || document.documentElement.mozRequestFullScreen
+        || document.documentElement.msRequestFullscreen;
+
+      if (requestFs) {
+        fullscreenChangeHandled = false;
+        requestFs.call(document.documentElement).then(() => {
+          showExamUI(cfg);
+        }).catch(err => {
+          // Fullscreen denied — still allow exam but warn
+          if (DB.getSettings().requireFullscreen) {
+            showToast('Tela cheia necessária. Permita o modo tela cheia no navegador.', 'error');
+            DB.invalidateAttempt(currentAttemptId, 'Tela cheia não foi concedida');
+            currentAttemptId = null;
+          } else {
+            showExamUI(cfg);
+          }
+        });
+      } else {
+        showExamUI(cfg);
+      }
+    }
+
+    function showExamUI(cfg) {
+      examActive = true;
+      document.getElementById('exam-overlay').classList.remove('hidden');
+      document.getElementById('exam-subject-name').textContent = cfg.name;
+
+      renderExamQuestion();
+      renderNavDots();
+
+      // Timer
+      if (cfg.timeLimit > 0) {
+        timeRemaining = cfg.timeLimit * 60;
+        document.getElementById('exam-timer').classList.remove('hidden');
+        timerInterval = setInterval(tickTimer, 1000);
+        updateTimerDisplay();
+      }
+    }
+
+    // ============================================================
+    // EXAM RENDERING
+    // ============================================================
+    function renderExamQuestion() {
+      const q = currentQuestions[currentQuestionIndex];
+      const n = currentQuestions.length;
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+
+      document.getElementById('exam-progress-text').textContent =
+        `Questão ${currentQuestionIndex + 1} de ${n}`;
+      document.getElementById('exam-progress-fill').style.width =
+        `${((currentQuestionIndex + 1) / n) * 100}%`;
+
+      const answeredCount = Object.keys(examAnswers).length;
+      document.getElementById('exam-answered-count').textContent =
+        `${answeredCount} respondida${answeredCount !== 1 ? 's' : ''}`;
+
+      document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
+      document.getElementById('btn-next').style.display =
+        currentQuestionIndex < n - 1 ? 'inline-flex' : 'none';
+      document.getElementById('btn-finish').style.display =
+        currentQuestionIndex === n - 1 ? 'inline-flex' : 'none';
+
+      const selected = examAnswers[q.id];
+
+      const body = document.getElementById('exam-body');
+      body.innerHTML = `
+        <div class="question-number">Questão ${currentQuestionIndex + 1}</div>
+        <div class="question-text">${q.text}</div>
+        <ul class="options-list">
+          ${q.options.map((opt, i) => `
+            <li class="option-item">
+              <input type="radio" class="option-input" name="q${q.id}" id="opt_${q.id}_${i}"
+                value="${i}" ${selected === i ? 'checked' : ''}
+                onchange="selectAnswer('${q.id}', ${i})">
+              <label class="option-label" for="opt_${q.id}_${i}">
+                <span class="option-letter">${letters[i]}</span>
+                <span>${opt}</span>
+              </label>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+
+      updateNavDots();
+    }
+
+    function renderNavDots() {
+      const dotsEl = document.getElementById('exam-nav-dots');
+      dotsEl.innerHTML = currentQuestions.map((q, i) => `
+        <button class="nav-dot" id="dot_${i}" onclick="goToQuestion(${i})" title="Questão ${i + 1}"></button>
+      `).join('');
+      updateNavDots();
+    }
+
+    function updateNavDots() {
+      currentQuestions.forEach((q, i) => {
+        const dot = document.getElementById(`dot_${i}`);
+        if (!dot) return;
+        dot.className = 'nav-dot';
+        if (examAnswers[q.id] !== undefined) dot.classList.add('answered');
+        if (i === currentQuestionIndex) dot.classList.add('current');
+      });
+    }
+
+    function selectAnswer(questionId, optionIndex) {
+      examAnswers[questionId] = optionIndex;
+      updateNavDots();
+      const answeredCount = Object.keys(examAnswers).length;
+      document.getElementById('exam-answered-count').textContent =
+        `${answeredCount} respondida${answeredCount !== 1 ? 's' : ''}`;
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderExamQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < currentQuestions.length - 1) {
+        currentQuestionIndex++;
+        renderExamQuestion();
+      }
+    }
+
+    function goToQuestion(idx) {
+      currentQuestionIndex = idx;
+      renderExamQuestion();
+    }
+
+    // ============================================================
+    // TIMER
+    // ============================================================
+    function tickTimer() {
+      timeRemaining--;
+      updateTimerDisplay();
+      if (timeRemaining <= 0) {
+        clearInterval(timerInterval);
+        showToast('Tempo esgotado! Finalizando prova automaticamente.', 'warning');
+        finishExam();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById('exam-timer');
+      const mins = Math.floor(timeRemaining / 60);
+      const secs = timeRemaining % 60;
+      el.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      el.classList.toggle('warning', timeRemaining < 300 && timeRemaining > 0);
+    }
+
+    // ============================================================
+    // FINISH / CONFIRM
+    // ============================================================
+    function confirmFinish() {
+      const unanswered = currentQuestions.length - Object.keys(examAnswers).length;
+      const msgEl = document.getElementById('confirm-unanswered');
+      if (unanswered > 0) {
+        msgEl.innerHTML = `<span class="text-warning">⚠ Você ainda tem <strong>${unanswered} questão(ões) sem resposta</strong>. Questões não respondidas serão contadas como erradas.</span>`;
+      } else {
+        msgEl.innerHTML = '<span class="text-success">✓ Todas as questões foram respondidas.</span>';
+      }
+      document.getElementById('confirm-modal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+    }
+
+    function finishExam() {
+      closeConfirmModal();
+      clearInterval(timerInterval);
+
+      if (!currentAttemptId) return;
+
+      examActive = false;
+      exitFullscreen();
+
+      const attempt = DB.finishAttempt(currentAttemptId, examAnswers);
+      document.getElementById('exam-overlay').classList.add('hidden');
+
+      showResult(attempt);
+      renderDashboard();
+    }
+
+    // ============================================================
+    // RESULT
+    // ============================================================
+    function showResult(attempt) {
+      const scoreDisplay = attempt.score.toFixed(1) + ' / 10';
+      const pct = (attempt.correctAnswers / attempt.totalQuestions) * 100;
+
+      const scoreEl = document.getElementById('result-score-value');
+      scoreEl.textContent = scoreDisplay;
+      scoreEl.className = 'result-score-value ' + (pct >= 60 ? 'pass' : 'fail');
+
+      document.getElementById('result-score-detail').textContent =
+        `${attempt.correctAnswers} de ${attempt.totalQuestions} questões corretas`;
+
+      const badge = pct >= 70
+        ? '<span class="badge badge-success" style="font-size:0.9rem; padding:0.4rem 1rem;">✓ Aprovado</span>'
+        : pct >= 60
+        ? '<span class="badge badge-warning" style="font-size:0.9rem; padding:0.4rem 1rem;">⚠ Resultado Regular</span>'
+        : '<span class="badge badge-danger" style="font-size:0.9rem; padding:0.4rem 1rem;">✗ Abaixo da média</span>';
+      document.getElementById('result-badge-container').innerHTML = badge;
+
+      // Review section
+      const reviewSection = document.getElementById('result-review-section');
+      const letters = ['A', 'B', 'C', 'D', 'E'];
+      reviewSection.innerHTML = `
+        <h3 style="font-size:1rem; font-weight:700; color:var(--azul-navy); margin-bottom:1rem;">
+          Revisão das Questões
+        </h3>
+        ${attempt.questions.map((q, idx) => {
+          const studentAns = attempt.answers[q.id];
+          const isCorrect = studentAns === q.correct;
+          return `
+            <div class="review-question ${isCorrect ? 'correct-q' : 'wrong-q'}">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <span style="font-size:0.78rem; font-weight:700; text-transform:uppercase; color:var(--gray-400)">
+                  Questão ${idx + 1}
+                </span>
+                <span class="badge ${isCorrect ? 'badge-success' : 'badge-danger'}">
+                  ${isCorrect ? '✓ Correto' : '✗ Incorreto'}
+                </span>
+              </div>
+              <div class="review-q-text">${q.text}</div>
+              <div class="review-options">
+                ${q.options.map((opt, i) => {
+                  let cls = '';
+                  if (i === q.correct) cls = 'correct-ans';
+                  else if (i === studentAns && !isCorrect) cls = 'wrong-ans';
+                  const markers = [];
+                  if (i === q.correct) markers.push('✓');
+                  if (i === studentAns && !isCorrect) markers.push('✗');
+                  const marker = markers.join('') || letters[i];
+                  return `<div class="review-opt ${cls}">
+                    <span class="opt-marker">${marker}</span>
+                    <span>${opt}</span>
+                  </div>`;
+                }).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      `;
+
+      document.getElementById('result-overlay').classList.remove('hidden');
+    }
+
+    function closeResult() {
+      document.getElementById('result-overlay').classList.add('hidden');
+      currentAttemptId = null;
+      currentQuestions = [];
+    }
+
+    // ============================================================
+    // INVALIDATION
+    // ============================================================
+    function invalidateExam(reason) {
+      if (!examActive || !currentAttemptId) return;
+      examActive = false;
+      clearInterval(timerInterval);
+
+      DB.invalidateAttempt(currentAttemptId, reason);
+
+      document.getElementById('exam-overlay').classList.add('hidden');
+      document.getElementById('confirm-modal').classList.add('hidden');
+
+      const reasonEl = document.getElementById('invalidation-reason');
+      const messages = {
+        'fullscreen_exit': 'Você saiu do modo tela cheia durante a prova.',
+        'tab_change': 'Você trocou de aba ou minimizou o navegador.',
+        'window_blur': 'O foco da janela foi perdido (Alt+Tab ou aplicativo externo).',
+        'visibility_hidden': 'A aba da prova ficou oculta.',
+      };
+      reasonEl.textContent = messages[reason] || reason;
+      document.getElementById('invalidation-screen').classList.remove('hidden');
+      renderDashboard();
+    }
+
+    function closeInvalidation() {
+      document.getElementById('invalidation-screen').classList.add('hidden');
+      currentAttemptId = null;
+    }
+
+    // ============================================================
+    // FULLSCREEN MONITORING
+    // ============================================================
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      const isFullscreen = !!(document.fullscreenElement
+        || document.webkitFullscreenElement
+        || document.mozFullScreenElement
+        || document.msFullscreenElement);
+
+      if (!isFullscreen && examActive) {
+        invalidateExam('fullscreen_exit');
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && examActive) {
+        invalidateExam('visibility_hidden');
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      if (examActive) {
+        // Small delay to allow fullscreen dialog to settle
+        setTimeout(() => {
+          if (examActive) invalidateExam('window_blur');
+        }, 200);
+      }
+    });
+
+    // Block common keyboard shortcuts during exam
+    document.addEventListener('keydown', e => {
+      if (!examActive) return;
+      // Block F12, F5, Ctrl+R, Ctrl+W, etc.
+      if (e.key === 'F12' || (e.ctrlKey && ['r', 'w', 't', 'n', 'f', 'g'].includes(e.key.toLowerCase()))) {
+        e.preventDefault();
+      }
+    });
+
+    // Block right-click during exam
+    document.addEventListener('contextmenu', e => {
+      if (examActive) e.preventDefault();
+    });
+
+    function exitFullscreen() {
+      const exitFs = document.exitFullscreen
+        || document.webkitExitFullscreen
+        || document.mozCancelFullScreen
+        || document.msExitFullscreen;
+      if (exitFs && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        exitFs.call(document).catch(() => {});
+      }
+    }
+
+    // ============================================================
+    // UTILS
+    // ============================================================
+    function logout() {
+      if (examActive) {
+        if (!confirm('Atenção: você tem uma prova em andamento. Sair agora INVALIDARÁ a prova. Deseja realmente sair?')) {
+          return;
+        }
+        if (currentAttemptId) {
+          examActive = false;
+          DB.invalidateAttempt(currentAttemptId, 'Aluno fez logout durante a prova');
+        }
+        exitFullscreen();
+      }
+      DB.clearAuth();
+      window.location.href = 'index.html';
+    }
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    }
+  </script>
+</body>
+</html>

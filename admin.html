@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preparatório Azul – Administrador</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .exam-config-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--gray-100); flex-wrap: wrap;
+    }
+    .exam-config-row:last-child { border-bottom: none; }
+    .exam-config-name { flex: 1; min-width: 160px; font-weight: 600; color: var(--azul-navy); }
+    .exam-config-meta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .config-field { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--gray-600); }
+    .config-field input[type="number"] { width: 70px; padding: 0.3rem 0.5rem; border: 1.5px solid var(--gray-300); border-radius: 4px; font-size: 0.85rem; text-align: center; }
+    .student-row td { font-size: 0.875rem; }
+    .score-cell { font-weight: 700; }
+    .score-cell.pass { color: var(--success); }
+    .score-cell.fail { color: var(--danger); }
+
+    /* Presença table */
+    .presenca-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .presenca-table th { background: var(--azul-navy); color: white; padding: 0.6rem 0.75rem; text-align: center; font-weight: 600; white-space: nowrap; }
+    .presenca-table th:first-child { text-align: left; }
+    .presenca-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+    .presenca-table tr:hover td { background: var(--gray-50); }
+    .presenca-cell { display: flex; flex-direction: column; gap: 0.3rem; align-items: center; }
+    .presenca-cell label { font-size: 0.7rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.04em; }
+    .presenca-cell input { width: 70px; padding: 0.25rem 0.4rem; border: 1.5px solid var(--gray-300); border-radius: 4px; font-size: 0.82rem; text-align: center; }
+    .presenca-cell .nota-auto { font-size: 0.9rem; font-weight: 700; color: var(--azul-navy); text-align: center; }
+    .presenca-cell .nota-none { font-size: 0.8rem; color: var(--gray-300); text-align: center; }
+    .presenca-save-btn { padding: 0.25rem 0.75rem; font-size: 0.78rem; }
+
+    /* Export / PDF */
+    .export-section { background: var(--gray-50); border-radius: var(--border-radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .student-pdf-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--gray-100); gap: 1rem; flex-wrap: wrap; }
+    .student-pdf-row:last-child { border-bottom: none; }
+    .student-pdf-info { flex: 1; }
+    .student-pdf-name { font-weight: 600; color: var(--azul-navy); }
+    .student-pdf-sub { font-size: 0.78rem; color: var(--gray-400); margin-top: 0.2rem; }
+    .subject-status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.75rem; padding: 0.15rem 0.5rem; border-radius: 20px; background: var(--gray-100); color: var(--gray-500); }
+    .subject-status.done { background: rgba(16,185,129,0.1); color: var(--success); }
+
+    /* ─── PRINT / PDF TEMPLATE ──────────────────────────────── */
+    @media print {
+      body > *:not(#pdf-print-container) { display: none !important; }
+      #pdf-print-container { display: block !important; }
+      @page { margin: 20mm 18mm; size: A4; }
+    }
+    #pdf-print-container { display: none; }
+    .pdf-page { font-family: Arial, sans-serif; font-size: 11pt; color: #000; page-break-after: always; padding: 0; }
+    .pdf-page:last-child { page-break-after: avoid; }
+    .pdf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18pt; border-bottom: 2px solid #0057B8; padding-bottom: 10pt; }
+    .pdf-logos { display: flex; align-items: center; gap: 16pt; }
+    .pdf-logos img { height: 48pt; object-fit: contain; }
+    .pdf-logos .pdf-logo-sep { width: 1px; height: 40pt; background: #ccc; }
+    .pdf-title-block { text-align: right; }
+    .pdf-main-title { font-size: 15pt; font-weight: 700; color: #0A2140; letter-spacing: 0.02em; }
+    .pdf-sub-title { font-size: 8.5pt; color: #555; margin-top: 2pt; }
+    .pdf-student-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5pt 20pt; margin-bottom: 14pt; background: #f5f8fc; border: 1px solid #d0daea; border-radius: 4pt; padding: 10pt 14pt; }
+    .pdf-info-row { font-size: 9.5pt; }
+    .pdf-info-label { color: #555; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pdf-info-val { font-weight: 600; color: #0A2140; }
+    .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 10pt; }
+    .pdf-table th { background: #0A2140; color: #fff; padding: 6pt 8pt; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.04em; }
+    .pdf-table td { padding: 6pt 8pt; font-size: 10pt; border-bottom: 1px solid #d0daea; }
+    .pdf-table tr:nth-child(even) td { background: #f5f8fc; }
+    .pdf-table .col-materia { width: 52%; }
+    .pdf-table .col-nota { width: 16%; text-align: center; font-weight: 700; }
+    .pdf-table .col-part { width: 16%; text-align: center; }
+    .pdf-table .col-obs { width: 16%; font-size: 8.5pt; color: #555; }
+    .pdf-totais { background: #0057B8; color: #fff; }
+    .pdf-totais td { font-weight: 700; font-size: 9.5pt; padding: 5pt 8pt; }
+    .pdf-footer { margin-top: 14pt; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #d0daea; padding-top: 8pt; }
+    .pdf-emissao { font-size: 8pt; color: #555; }
+    .pdf-assinatura { text-align: center; }
+    .pdf-assinatura-line { border-top: 1px solid #333; width: 180pt; margin: 0 auto; }
+    .pdf-assinatura-label { font-size: 8pt; color: #555; margin-top: 2pt; }
+    .pdf-nota-pass { color: #10b981; }
+    .pdf-nota-fail { color: #ef4444; }
+    .pdf-nota-empty { color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="main-layout">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img src="Fundo transparente c.png" alt="SAFE">
+        <div class="brand-sep"></div>
+        <span class="topbar-title">Painel Administrativo</span>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user">Administrador</span>
+        <button class="btn btn-logout" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="page-title">Painel do Administrador</div>
+      <p class="page-subtitle">Gerencie provas, alunos, presenças e emita os históricos de treinamento.</p>
+
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchTab('results')">📊 Resultados</button>
+        <button class="admin-tab" onclick="switchTab('exams')">📝 Provas</button>
+        <button class="admin-tab" onclick="switchTab('students')">👨‍✈️ Alunos</button>
+        <button class="admin-tab" onclick="switchTab('presencas')">📅 Presenças</button>
+        <button class="admin-tab" onclick="switchTab('export')">🏅 Histórico Azul</button>
+        <button class="admin-tab" onclick="switchTab('settings')">⚙ Configurações</button>
+      </div>
+
+      <!-- ==================== RESULTADOS ==================== -->
+      <div id="panel-results" class="admin-panel active">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Resultados das Provas</span>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <select class="form-control" style="width:auto;" id="filter-exam" onchange="renderResults()">
+                <option value="">Todas as provas</option>
+              </select>
+              <select class="form-control" style="width:auto;" id="filter-student" onchange="renderResults()">
+                <option value="">Todos os alunos</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table id="results-table">
+              <thead><tr>
+                <th>Aluno</th><th>Prova</th><th>Data</th>
+                <th>Questões</th><th>Nota</th><th>Status</th><th>Ações</th>
+              </tr></thead>
+              <tbody id="results-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PROVAS ==================== -->
+      <div id="panel-exams" class="admin-panel">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Configuração das Provas</span></div>
+          <div id="exam-configs-list"></div>
+        </div>
+      </div>
+
+      <!-- ==================== ALUNOS ==================== -->
+      <div id="panel-students" class="admin-panel">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Alunos Cadastrados</span>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="btn btn-outline btn-sm" onclick="openImportModal()">📥 Importar CSV</button>
+              <button class="btn btn-primary btn-sm" onclick="openAddStudentModal()">+ Adicionar Aluno</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Nome</th><th>E-mail</th><th>CPF</th>
+                <th>Cód. ANAC</th><th>Cadastrado em</th><th>Provas</th><th>Ações</th>
+              </tr></thead>
+              <tbody id="students-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== PRESENÇAS ==================== -->
+      <div id="panel-presencas" class="admin-panel">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Presença e Notas por Matéria</span>
+            <span style="font-size:0.82rem;color:var(--gray-400);">Notas das provas são preenchidas automaticamente. Informe a % de participação de cada matéria e a nota do GSI.</span>
+          </div>
+          <div style="overflow-x:auto;" id="presencas-wrapper">
+            <div class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== HISTÓRICO AZUL ==================== -->
+      <div id="panel-export" class="admin-panel">
+        <div class="export-section">
+          <div class="flex-between mb-2">
+            <div>
+              <h3 style="font-weight:700;color:var(--azul-navy);">Histórico de Treinamento — Formato Azul</h3>
+              <p class="text-muted">Gere o PDF oficial para envio à Azul Linhas Aéreas, combinando notas das provas e presença do curso teórico.</p>
+            </div>
+          </div>
+          <div class="alert alert-info">
+            <span>ℹ</span>
+            <span>Preencha as presenças na aba <strong>Presenças</strong> antes de gerar os documentos. A nota de cada prova é calculada automaticamente. Configure o nome do CIAC e o período em <strong>Configurações</strong>.</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Gerar Documentos</span>
+            <div style="display:flex;gap:0.5rem;">
+              <button class="btn btn-primary" onclick="generateAllPDF()">📄 Gerar Todos (PDF)</button>
+            </div>
+          </div>
+          <div id="export-student-list">
+            <div class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== CONFIGURAÇÕES ==================== -->
+      <div id="panel-settings" class="admin-panel">
+        <div style="display:grid;gap:1.5rem;max-width:640px;">
+          <div class="card">
+            <div class="card-header"><span class="card-title">Dados do Histórico Azul</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Nome do CIAC</label>
+                <input class="form-control" type="text" id="cfg-ciac" placeholder="SAFE School of Aviation">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Período do Treinamento</label>
+                <input class="form-control" type="text" id="cfg-periodo" placeholder="Ex: 01/06/2026 a 30/06/2026">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Data de Emissão dos Documentos</label>
+                <input class="form-control" type="text" id="cfg-data-emissao" placeholder="Ex: 01/07/2026">
+              </div>
+              <button class="btn btn-primary" onclick="saveGeneralSettings()">Salvar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Segurança das Provas</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Exigir Tela Cheia</label>
+                <select class="form-control" id="cfg-fullscreen">
+                  <option value="true">Sim — prova invalidada ao sair da tela cheia</option>
+                  <option value="false">Não — modo kiosk desativado</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="saveGeneralSettings()">Salvar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title">Alterar Credenciais do Admin</span></div>
+            <div class="card-body">
+              <div id="pass-error" class="alert alert-danger hidden"></div>
+              <div id="pass-success" class="alert alert-success hidden"></div>
+              <div class="form-group">
+                <label class="form-label">Usuário</label>
+                <input class="form-control" type="text" id="cfg-admin-user">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Nova Senha</label>
+                <input class="form-control" type="password" id="cfg-admin-pass">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirmar Nova Senha</label>
+                <input class="form-control" type="password" id="cfg-admin-pass2">
+              </div>
+              <button class="btn btn-navy" onclick="saveAdminCredentials()">Atualizar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><span class="card-title" style="color:var(--danger);">⚠ Zona de Perigo</span></div>
+            <div class="card-body">
+              <p class="text-muted mb-2">Estas ações são irreversíveis.</p>
+              <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <button class="btn btn-outline-danger btn-sm" onclick="clearAllAttempts()">Limpar Todos os Resultados</button>
+                <button class="btn btn-danger btn-sm" onclick="resetSystem()">Resetar Sistema Completo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="main-footer">SAFE School of Aviation &mdash; Preparatório Azul &mdash; Todos os direitos reservados</footer>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Add/Edit Student -->
+  <div id="modal-add-student" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="add-student-title">Adicionar Aluno</span>
+        <button class="modal-close" onclick="closeModal('modal-add-student')">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="add-student-error" class="alert alert-danger hidden"></div>
+        <div class="form-group">
+          <label class="form-label">Nome Completo</label>
+          <input class="form-control" type="text" id="st-name" placeholder="Ex: João da Silva">
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-mail (login)</label>
+          <input class="form-control" type="email" id="st-email" placeholder="joao@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CPF (senha — apenas números)</label>
+          <input class="form-control" type="text" id="st-cpf" placeholder="12345678901" maxlength="14">
+          <span class="cpf-hint">11 dígitos, sem pontos ou traços</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Código ANAC <span style="font-size:0.78rem;color:var(--gray-400);">(opcional)</span></label>
+          <input class="form-control" type="text" id="st-anac" placeholder="Ex: 123456">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-add-student')">Cancelar</button>
+        <button class="btn btn-primary" id="btn-save-student" onclick="saveStudent()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import CSV -->
+  <div id="modal-import" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title">Importar Alunos via CSV</span>
+        <button class="modal-close" onclick="closeModal('modal-import')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <span>ℹ</span>
+          <span>Formato: <strong>nome,email,cpf,codigoAnac</strong> — o campo codigoAnac é opcional. A primeira linha pode ser cabeçalho.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Arquivo CSV</label>
+          <input type="file" class="form-control" id="csv-file" accept=".csv,.txt">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ou cole o conteúdo CSV:</label>
+          <textarea class="form-control" id="csv-text" rows="6"
+            placeholder="nome,email,cpf,codigoAnac&#10;João Silva,joao@email.com,12345678901,123456"></textarea>
+        </div>
+        <div id="import-result" class="hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-import')">Fechar</button>
+        <button class="btn btn-primary" onclick="processImport()">Importar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attempt Detail -->
+  <div id="modal-attempt" class="modal-overlay hidden">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <span class="modal-title">Detalhes da Tentativa</span>
+        <button class="modal-close" onclick="closeModal('modal-attempt')">×</button>
+      </div>
+      <div class="modal-body" id="modal-attempt-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-danger btn-sm" id="btn-reset-attempt" style="margin-right:auto;">↺ Resetar tentativa</button>
+        <button class="btn btn-outline" onclick="closeModal('modal-attempt')">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div id="modal-confirm" class="modal-overlay hidden">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header"><span class="modal-title" id="confirm-title">Confirmar</span></div>
+      <div class="modal-body"><p id="confirm-msg"></p></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Cancelar</button>
+        <button class="btn btn-danger" id="confirm-ok-btn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF Print Container -->
+  <div id="pdf-print-container"></div>
+
+  <div id="toast-container"></div>
+
+  <script src="js/questions.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    DB.init();
+    const auth = DB.checkAuth();
+    if (!auth || auth.type !== 'admin') window.location.href = 'index.html';
+
+    let editingStudentId = null;
+    let currentAttemptForReset = null;
+
+    // ── INIT ──────────────────────────────────────────────────────
+    function init() {
+      renderStats();
+      renderResults();
+      renderExamConfigs();
+      renderStudents();
+      renderPresencas();
+      renderExportList();
+      loadSettingsForm();
+      populateFilters();
+    }
+
+    // ── TABS ──────────────────────────────────────────────────────
+    const TAB_ORDER = ['results','exams','students','presencas','export','settings'];
+    function switchTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach((t, i) => t.classList.toggle('active', TAB_ORDER[i] === tab));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
+      if (tab === 'presencas') renderPresencas();
+      if (tab === 'export') renderExportList();
+    }
+
+    // ── STATS ─────────────────────────────────────────────────────
+    function renderStats() {
+      const students = DB.getStudents();
+      const attempts = DB.getAttempts();
+      const completed = attempts.filter(a => a.status === 'completed');
+      const invalidated = attempts.filter(a => a.status === 'invalidated');
+      const avgScore = completed.length
+        ? (completed.reduce((s, a) => s + (a.score || 0), 0) / completed.length).toFixed(2)
+        : '—';
+
+      document.getElementById('stats-grid').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Alunos</div>
+          <div class="stat-value">${students.length}</div>
+          <div class="stat-sub">cadastrados</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Provas Realizadas</div>
+          <div class="stat-value">${completed.length}</div>
+          <div class="stat-sub">concluídas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Invalidadas</div>
+          <div class="stat-value" style="color:var(--danger)">${invalidated.length}</div>
+          <div class="stat-sub">tela cheia violada</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Média Geral</div>
+          <div class="stat-value">${avgScore}${avgScore !== '—' ? ' / 10' : ''}</div>
+          <div class="stat-sub">nota média</div>
+        </div>
+      `;
+    }
+
+    // ── RESULTS ───────────────────────────────────────────────────
+    function populateFilters() {
+      const examSel = document.getElementById('filter-exam');
+      const studentSel = document.getElementById('filter-student');
+      DB.getExamConfigs().forEach(cfg => {
+        const o = document.createElement('option'); o.value = cfg.id; o.textContent = cfg.name; examSel.appendChild(o);
+      });
+      DB.getStudents().forEach(s => {
+        const o = document.createElement('option'); o.value = s.id; o.textContent = s.name; studentSel.appendChild(o);
+      });
+    }
+
+    function renderResults() {
+      const examFilter = document.getElementById('filter-exam').value;
+      const studentFilter = document.getElementById('filter-student').value;
+      let filtered = DB.getAttempts();
+      if (examFilter) filtered = filtered.filter(a => a.examId === examFilter);
+      if (studentFilter) filtered = filtered.filter(a => a.studentId === studentFilter);
+      filtered.sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+
+      const tbody = document.getElementById('results-tbody');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center" style="padding:2rem;">Nenhum resultado encontrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(a => {
+        const student = DB.getStudentById(a.studentId);
+        const cfg = DB.getExamConfig(a.examId);
+        const pct = a.totalQuestions > 0 ? (a.correctAnswers / a.totalQuestions) * 100 : 0;
+        const scoreDisplay = a.status === 'completed' ? `${a.score.toFixed(1)} / 10` : '—';
+        const statusBadge = { completed: '<span class="badge badge-success">Concluída</span>', invalidated: '<span class="badge badge-danger">Invalidada</span>', in_progress: '<span class="badge badge-warning">Em andamento</span>' }[a.status] || '';
+        return `<tr>
+          <td>${student ? student.name : '<em style="color:var(--gray-400)">Removido</em>'}</td>
+          <td>${cfg ? cfg.name : a.subjectKey}</td>
+          <td>${a.finishedAt ? new Date(a.finishedAt).toLocaleString('pt-BR') : new Date(a.startedAt).toLocaleString('pt-BR')}</td>
+          <td>${a.status === 'completed' ? `${a.correctAnswers}/${a.totalQuestions}` : '—'}</td>
+          <td class="score-cell ${a.status === 'completed' ? (pct >= 50 ? 'pass' : 'fail') : ''}">
+            ${a.status === 'completed' ? scoreDisplay : (a.status === 'invalidated' ? '<span class="text-danger">Invalidada</span>' : '—')}
+          </td>
+          <td>${statusBadge}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="viewAttempt('${a.id}')">Ver</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function viewAttempt(attemptId) {
+      const a = DB.getAttempts().find(x => x.id === attemptId);
+      if (!a) return;
+      const student = DB.getStudentById(a.studentId);
+      const cfg = DB.getExamConfig(a.examId);
+      const letters = ['A','B','C','D','E'];
+      let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+        <div><span class="text-muted">Aluno:</span><br><strong>${student ? student.name : 'Desconhecido'}</strong></div>
+        <div><span class="text-muted">Prova:</span><br><strong>${cfg ? cfg.name : a.subjectKey}</strong></div>
+        <div><span class="text-muted">Início:</span><br>${new Date(a.startedAt).toLocaleString('pt-BR')}</div>
+        <div><span class="text-muted">Fim:</span><br>${a.finishedAt ? new Date(a.finishedAt).toLocaleString('pt-BR') : '—'}</div>
+        <div><span class="text-muted">Nota:</span><br><strong>${a.status === 'completed' ? a.score.toFixed(1)+' / 10' : '—'}</strong></div>
+        <div><span class="text-muted">Corretas:</span><br>${a.correctAnswers ?? '—'} / ${a.totalQuestions ?? '—'}</div>
+      </div>`;
+      if (a.status === 'invalidated') html += `<div class="alert alert-danger"><span>⚠</span><span><strong>Prova Invalidada:</strong> ${a.invalidationReason}</span></div>`;
+      if (a.questions?.length) {
+        html += `<h4 style="font-weight:700;margin-bottom:1rem;">Questões</h4>`;
+        a.questions.forEach((q, idx) => {
+          const ans = a.answers?.[q.id];
+          const isCorrect = ans === q.correct;
+          html += `<div class="question-preview" style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:4px;padding:1rem;margin-bottom:0.75rem;border-color:${a.status==='completed'?(isCorrect?'var(--success)':'var(--danger)'):'var(--gray-200)'}">
+            <div style="font-weight:600;margin-bottom:0.5rem;">${idx+1}. ${q.text}</div>
+            <div style="font-size:0.82rem;">
+              ${q.options.map((opt, i) => {
+                let style = '';
+                let marker = letters[i];
+                if (i === q.correct) { style = 'color:var(--success);font-weight:700;'; marker = '✓ '+letters[i]; }
+                if (ans !== undefined && i === ans && !isCorrect) { style = 'color:var(--danger);font-weight:700;'; marker = '✗ '+letters[i]; }
+                return `<div style="${style}">${marker}) ${opt}</div>`;
+              }).join('')}
+              ${ans === undefined ? '<div style="color:var(--gray-400);font-style:italic;">Não respondida</div>' : ''}
+            </div>
+          </div>`;
+        });
+      }
+      document.getElementById('modal-attempt-body').innerHTML = html;
+      // Setup reset button
+      currentAttemptForReset = a;
+      const resetBtn = document.getElementById('btn-reset-attempt');
+      resetBtn.onclick = () => {
+        const s = DB.getStudentById(a.studentId);
+        showConfirm(`Resetar a tentativa de ${s?.name || 'aluno desconhecido'} em "${cfg?.name}"? O aluno poderá realizar a prova novamente.`, () => {
+          DB.resetStudentAttempt(a.studentId, a.subjectKey);
+          closeModal('modal-attempt');
+          renderResults(); renderStats(); renderPresencas(); renderExportList();
+          showToast('Tentativa resetada. O aluno pode realizar a prova novamente.', 'success');
+        }, 'Resetar Tentativa');
+      };
+      document.getElementById('modal-attempt').classList.remove('hidden');
+    }
+
+    // ── EXAM CONFIGS ──────────────────────────────────────────────
+    function renderExamConfigs() {
+      const configs = DB.getExamConfigs();
+      document.getElementById('exam-configs-list').innerHTML = configs.map(cfg => `
+        <div class="exam-config-row">
+          <div class="exam-config-name">
+            <div>${cfg.name}</div>
+            <div style="font-size:0.78rem;color:var(--gray-400);">20 questões &mdash; única tentativa</div>
+          </div>
+          <div class="exam-config-meta">
+            <div class="config-field">
+              <span>Tempo (min):</span>
+              <input type="number" min="0" max="300" value="${cfg.timeLimit || 0}"
+                id="tlimit_${cfg.id}" title="0 = sem limite" onchange="saveExamConfig('${cfg.id}')">
+              <span style="color:var(--gray-400);">0=∞</span>
+            </div>
+            <div class="config-field">
+              <span>Liberada:</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="enabled_${cfg.id}" ${cfg.enabled ? 'checked' : ''} onchange="toggleExam('${cfg.id}')">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <span class="badge ${cfg.enabled ? 'badge-success' : 'badge-locked'}">
+              ${cfg.enabled ? '✓ Liberada' : '🔒 Bloqueada'}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function saveExamConfig(id) {
+      const t = parseInt(document.getElementById(`tlimit_${id}`).value) || 0;
+      DB.updateExamConfig(id, { timeLimit: t });
+      showToast('Configuração salva.', 'success');
+    }
+
+    function toggleExam(id) {
+      const enabled = document.getElementById(`enabled_${id}`).checked;
+      DB.updateExamConfig(id, { enabled });
+      renderExamConfigs(); renderStats();
+      showToast(enabled ? 'Prova liberada.' : 'Prova bloqueada.', enabled ? 'success' : 'info');
+    }
+
+    // ── STUDENTS ──────────────────────────────────────────────────
+    function renderStudents() {
+      const students = DB.getStudents();
+      const attempts = DB.getAttempts();
+      const tbody = document.getElementById('students-tbody');
+      if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = students.map((s, i) => {
+        const count = attempts.filter(a => a.studentId === s.id && a.status === 'completed').length;
+        const cpfMasked = s.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        return `<tr>
+          <td>${i+1}</td>
+          <td style="font-weight:600;">${s.name}</td>
+          <td>${s.email}</td>
+          <td><code style="font-size:0.8rem;">${cpfMasked}</code></td>
+          <td>${s.codigoAnac || '<span class="text-muted">—</span>'}</td>
+          <td>${new Date(s.createdAt).toLocaleDateString('pt-BR')}</td>
+          <td>${count} / 3</td>
+          <td>
+            <div style="display:flex;gap:0.4rem;">
+              <button class="btn btn-outline btn-sm" onclick="openEditStudentModal('${s.id}')">Editar</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteStudent('${s.id}')">Remover</button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openAddStudentModal() {
+      editingStudentId = null;
+      document.getElementById('add-student-title').textContent = 'Adicionar Aluno';
+      document.getElementById('btn-save-student').textContent = 'Adicionar';
+      ['st-name','st-email','st-cpf','st-anac'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('add-student-error').classList.add('hidden');
+      document.getElementById('modal-add-student').classList.remove('hidden');
+    }
+
+    function openEditStudentModal(id) {
+      editingStudentId = id;
+      const s = DB.getStudentById(id);
+      if (!s) return;
+      document.getElementById('add-student-title').textContent = 'Editar Aluno';
+      document.getElementById('btn-save-student').textContent = 'Salvar';
+      document.getElementById('st-name').value = s.name;
+      document.getElementById('st-email').value = s.email;
+      document.getElementById('st-cpf').value = s.cpf;
+      document.getElementById('st-anac').value = s.codigoAnac || '';
+      document.getElementById('add-student-error').classList.add('hidden');
+      document.getElementById('modal-add-student').classList.remove('hidden');
+    }
+
+    function saveStudent() {
+      const name = document.getElementById('st-name').value.trim();
+      const email = document.getElementById('st-email').value.trim();
+      const cpf = document.getElementById('st-cpf').value.trim();
+      const anac = document.getElementById('st-anac').value.trim();
+      const errEl = document.getElementById('add-student-error');
+      if (!name || !email || !cpf) { showModalError(errEl, 'Preencha nome, e-mail e CPF.'); return; }
+      try {
+        if (editingStudentId) {
+          DB.updateStudent(editingStudentId, { name, email, cpf, codigoAnac: anac });
+          showToast('Aluno atualizado.', 'success');
+        } else {
+          DB.addStudent(name, email, cpf, anac);
+          showToast('Aluno adicionado.', 'success');
+        }
+        closeModal('modal-add-student');
+        renderStudents(); renderStats(); renderPresencas(); renderExportList();
+      } catch(e) { showModalError(errEl, e.message); }
+    }
+
+    function confirmDeleteStudent(id) {
+      const s = DB.getStudentById(id);
+      if (!s) return;
+      showConfirm(`Remover o aluno "${s.name}"? Seus resultados serão mantidos no histórico.`, () => {
+        DB.deleteStudent(id);
+        renderStudents(); renderStats(); renderPresencas(); renderExportList();
+        showToast('Aluno removido.', 'success');
+      });
+    }
+
+    function openImportModal() {
+      document.getElementById('csv-file').value = '';
+      document.getElementById('csv-text').value = '';
+      document.getElementById('import-result').classList.add('hidden');
+      document.getElementById('modal-import').classList.remove('hidden');
+    }
+
+    document.getElementById('csv-file').addEventListener('change', function() {
+      const file = this.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => { document.getElementById('csv-text').value = e.target.result; };
+      reader.readAsText(file);
+    });
+
+    function processImport() {
+      const csv = document.getElementById('csv-text').value.trim();
+      if (!csv) { showToast('Nenhum conteúdo CSV encontrado.', 'error'); return; }
+      const result = DB.importStudentsCSV(csv);
+      const resEl = document.getElementById('import-result');
+      resEl.innerHTML = `<div class="alert ${result.errors.length === 0 ? 'alert-success' : 'alert-warning'}">
+        <div>✓ <strong>${result.success}</strong> aluno(s) importado(s).</div>
+        ${result.errors.length ? `<div style="margin-top:0.5rem;">Erros:<br>${result.errors.map(e => `• ${e}`).join('<br>')}</div>` : ''}
+      </div>`;
+      resEl.classList.remove('hidden');
+      renderStudents(); renderStats(); renderPresencas(); renderExportList();
+    }
+
+    // ── PRESENÇAS ─────────────────────────────────────────────────
+    const SUBJECTS_PRESENCA = [
+      { key: 'regulamentos', label: 'REG', full: 'Regulamentos' },
+      { key: 'performance',  label: 'PERF', full: 'Performance' },
+      { key: 'meteorologia', label: 'MET', full: 'Meteorologia' },
+      { key: 'gsi',          label: 'GSI', full: 'Ger. Situações Inesperadas' }
+    ];
+
+    function renderPresencas() {
+      const students = DB.getStudents();
+      const wrapper = document.getElementById('presencas-wrapper');
+      if (!students.length) {
+        wrapper.innerHTML = '<div class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</div>';
+        return;
+      }
+
+      const headerCols = SUBJECTS_PRESENCA.map(s => {
+        const hasExam = s.key !== 'gsi';
+        return `<th style="min-width:${hasExam?'140px':'160px'};">
+          <div>${s.label}</div>
+          <div style="font-size:0.7rem;font-weight:400;opacity:0.8;">${s.full}</div>
+          ${hasExam ? '<div style="font-size:0.65rem;opacity:0.7;">Nota auto | Part.%</div>' : '<div style="font-size:0.65rem;opacity:0.7;">Nota | Part.%</div>'}
+        </th>`;
+      }).join('');
+
+      let rows = '';
+      students.forEach(s => {
+        const presencas = DB.getPresencas(s.id);
+        const attempts = DB.getStudentAttempts(s.id);
+
+        const cells = SUBJECTS_PRESENCA.map(sub => {
+          const att = attempts.find(a => a.subjectKey === sub.key && a.status === 'completed');
+          const hasExam = sub.key !== 'gsi';
+          const partVal = presencas[sub.key]?.participacao ?? '';
+          const notaVal = presencas[sub.key]?.nota ?? '';
+
+          if (hasExam) {
+            const notaAuto = att ? att.score.toFixed(1) : null;
+            return `<td>
+              <div class="presenca-cell">
+                ${notaAuto !== null
+                  ? `<span class="nota-auto" style="font-size:0.9rem;font-weight:700;color:${parseFloat(notaAuto)>=5?'var(--success)':'var(--danger)'};">${notaAuto}</span>`
+                  : `<span class="nota-none">—</span>`}
+                <input type="number" min="0" max="100" step="1"
+                  id="part_${sub.key}_${s.id}" value="${partVal}"
+                  placeholder="%" title="Participação %"
+                  style="width:65px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
+              </div>
+            </td>`;
+          } else {
+            return `<td>
+              <div class="presenca-cell" style="flex-direction:row;gap:4px;">
+                <input type="number" min="0" max="10" step="0.1"
+                  id="nota_${sub.key}_${s.id}" value="${notaVal}"
+                  placeholder="0-10" title="Nota GSI"
+                  style="width:58px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
+                <input type="number" min="0" max="100" step="1"
+                  id="part_${sub.key}_${s.id}" value="${partVal}"
+                  placeholder="%" title="Participação %"
+                  style="width:58px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
+              </div>
+            </td>`;
+          }
+        }).join('');
+
+        rows += `<tr>
+          <td style="font-weight:600;min-width:140px;">${s.name}</td>
+          ${cells}
+          <td><button class="btn btn-primary presenca-save-btn" onclick="savePresencas('${s.id}')">Salvar</button></td>
+        </tr>`;
+      });
+
+      wrapper.innerHTML = `
+        <table class="presenca-table">
+          <thead><tr>
+            <th>Aluno</th>
+            ${headerCols}
+            <th></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function savePresencas(studentId) {
+      const current = DB.getPresencas(studentId);
+      const updated = { ...current };
+      SUBJECTS_PRESENCA.forEach(sub => {
+        const partEl = document.getElementById(`part_${sub.key}_${studentId}`);
+        const partVal = partEl ? (partEl.value !== '' ? parseFloat(partEl.value) : null) : null;
+        if (sub.key === 'gsi') {
+          const notaEl = document.getElementById(`nota_gsi_${studentId}`);
+          const notaVal = notaEl ? (notaEl.value !== '' ? parseFloat(notaEl.value) : null) : null;
+          updated[sub.key] = { ...(updated[sub.key] || {}), nota: notaVal, participacao: partVal };
+        } else {
+          updated[sub.key] = { ...(updated[sub.key] || {}), participacao: partVal };
+        }
+      });
+      DB.setPresencas(studentId, updated);
+      showToast('Presenças salvas.', 'success');
+      renderExportList();
+    }
+
+    // ── EXPORT / PDF ──────────────────────────────────────────────
+    function renderExportList() {
+      const students = DB.getStudents();
+      const container = document.getElementById('export-student-list');
+      if (!students.length) {
+        container.innerHTML = '<div class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</div>';
+        return;
+      }
+      container.innerHTML = students.map(s => {
+        const report = DB.getStudentReport(s.id);
+        const doneBadges = report.rows.slice(0,3).map((r, i) => {
+          const labels = ['REG','PERF','MET'];
+          const done = r.nota !== null;
+          return `<span class="subject-status ${done ? 'done' : ''}">${done ? '✓' : '○'} ${labels[i]}</span>`;
+        }).join(' ');
+        const anac = s.codigoAnac ? `Cód. ANAC: ${s.codigoAnac}` : 'Sem cód. ANAC';
+        return `<div class="student-pdf-row">
+          <div class="student-pdf-info">
+            <div class="student-pdf-name">${s.name}</div>
+            <div class="student-pdf-sub">${anac} &nbsp;|&nbsp; ${doneBadges}</div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="generateStudentPDF('${s.id}')">📄 Gerar PDF</button>
+        </div>`;
+      }).join('');
+    }
+
+    function generateStudentPDF(studentId) {
+      const report = DB.getStudentReport(studentId);
+      if (!report) return;
+      const html = buildPDFPage(report);
+      const container = document.getElementById('pdf-print-container');
+      container.innerHTML = html;
+      window.print();
+    }
+
+    function generateAllPDF() {
+      const students = DB.getStudents();
+      if (!students.length) { showToast('Nenhum aluno cadastrado.', 'error'); return; }
+      const pages = students.map(s => {
+        const report = DB.getStudentReport(s.id);
+        return report ? buildPDFPage(report) : '';
+      }).join('');
+      document.getElementById('pdf-print-container').innerHTML = pages;
+      window.print();
+    }
+
+    function buildPDFPage(report) {
+      const { student, settings, rows, mediaNotas, mediaPart } = report;
+      const fmtNota = v => v !== null ? v.toFixed(1) : '—';
+      const fmtPart = v => v !== null ? v.toFixed(0) + '%' : '—';
+      const notaClass = v => v === null ? 'pdf-nota-empty' : (v >= 5 ? 'pdf-nota-pass' : 'pdf-nota-fail');
+
+      const rowsHtml = rows.map(r => `
+        <tr>
+          <td class="col-materia">${r.label}</td>
+          <td class="col-nota <span class="${notaClass(r.nota)}">${fmtNota(r.nota)}</span>"></td>
+          <td class="col-part">${fmtPart(r.participacao)}</td>
+          <td class="col-obs">${r.obs || ''}</td>
+        </tr>`).join('');
+
+      const periodo = settings.periodoTreinamento || '________________';
+      const ciac    = settings.ciacNome || 'SAFE School of Aviation';
+      const emissao = settings.dataEmissao || new Date().toLocaleDateString('pt-BR');
+      const anac    = student.codigoAnac || '________________';
+
+      return `<div class="pdf-page">
+        <div class="pdf-header">
+          <div class="pdf-logos">
+            <img src="Fundo transparente c.png" alt="SAFE">
+            <div class="pdf-logo-sep"></div>
+            <img src="Design sem nome.png" alt="Azul Escola Recomendada">
+          </div>
+          <div class="pdf-title-block">
+            <div class="pdf-main-title">HISTÓRICO DE TREINAMENTO</div>
+            <div class="pdf-sub-title">Preparatório Azul — SAFE School of Aviation</div>
+          </div>
+        </div>
+
+        <div class="pdf-student-info">
+          <div class="pdf-info-row">
+            <div class="pdf-info-label">Nome do Aluno</div>
+            <div class="pdf-info-val">${student.name}</div>
+          </div>
+          <div class="pdf-info-row">
+            <div class="pdf-info-label">Código ANAC</div>
+            <div class="pdf-info-val">${anac}</div>
+          </div>
+          <div class="pdf-info-row">
+            <div class="pdf-info-label">Período do Treinamento</div>
+            <div class="pdf-info-val">${periodo}</div>
+          </div>
+          <div class="pdf-info-row">
+            <div class="pdf-info-label">Nome do CIAC</div>
+            <div class="pdf-info-val">${ciac}</div>
+          </div>
+        </div>
+
+        <table class="pdf-table">
+          <thead><tr>
+            <th class="col-materia">Matéria</th>
+            <th class="col-nota">Média de Notas</th>
+            <th class="col-part">Participação (%)</th>
+            <th class="col-obs">Observações</th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `<tr>
+              <td class="col-materia">${r.label}</td>
+              <td class="col-nota"><span class="${notaClass(r.nota)}">${fmtNota(r.nota)}</span></td>
+              <td class="col-part">${fmtPart(r.participacao)}</td>
+              <td class="col-obs">${r.obs || ''}</td>
+            </tr>`).join('')}
+          </tbody>
+          <tfoot>
+            <tr class="pdf-totais">
+              <td>Média Geral de Notas:</td>
+              <td class="col-nota"><span class="${notaClass(mediaNotas)}">${fmtNota(mediaNotas)}</span></td>
+              <td></td><td></td>
+            </tr>
+            <tr class="pdf-totais">
+              <td>Média Geral de Participação:</td>
+              <td></td>
+              <td class="col-part">${fmtPart(mediaPart)}</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="pdf-footer">
+          <div class="pdf-emissao">Data de Emissão: ${emissao}</div>
+          <div class="pdf-assinatura">
+            <div class="pdf-assinatura-line"></div>
+            <div class="pdf-assinatura-label">${ciac} — Responsável pelo Treinamento</div>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ── SETTINGS ──────────────────────────────────────────────────
+    function loadSettingsForm() {
+      const s = DB.getSettings();
+      document.getElementById('cfg-ciac').value        = s.ciacNome || '';
+      document.getElementById('cfg-periodo').value     = s.periodoTreinamento || '';
+      document.getElementById('cfg-data-emissao').value= s.dataEmissao || '';
+      document.getElementById('cfg-fullscreen').value  = String(s.requireFullscreen !== false);
+      document.getElementById('cfg-admin-user').value  = s.adminUsername || 'admin';
+    }
+
+    function saveGeneralSettings() {
+      DB.updateSettings({
+        ciacNome:            document.getElementById('cfg-ciac').value.trim(),
+        periodoTreinamento:  document.getElementById('cfg-periodo').value.trim(),
+        dataEmissao:         document.getElementById('cfg-data-emissao').value.trim(),
+        requireFullscreen:   document.getElementById('cfg-fullscreen').value === 'true'
+      });
+      showToast('Configurações salvas.', 'success');
+    }
+
+    function saveAdminCredentials() {
+      const user = document.getElementById('cfg-admin-user').value.trim();
+      const pass = document.getElementById('cfg-admin-pass').value;
+      const pass2 = document.getElementById('cfg-admin-pass2').value;
+      const errEl = document.getElementById('pass-error');
+      const okEl  = document.getElementById('pass-success');
+      errEl.classList.add('hidden'); okEl.classList.add('hidden');
+      if (!user) { showModalError(errEl, 'Informe o usuário.'); return; }
+      if (pass && pass !== pass2) { showModalError(errEl, 'As senhas não conferem.'); return; }
+      const updates = { adminUsername: user };
+      if (pass) updates.adminPassword = pass;
+      DB.updateSettings(updates);
+      okEl.textContent = 'Credenciais atualizadas.';
+      okEl.classList.remove('hidden');
+      document.getElementById('cfg-admin-pass').value = '';
+      document.getElementById('cfg-admin-pass2').value = '';
+    }
+
+    function clearAllAttempts() {
+      showConfirm('Apagar TODOS os resultados de provas? Esta ação não pode ser desfeita.', () => {
+        DB.set(DB.KEYS.ATTEMPTS, []);
+        renderResults(); renderStats(); renderPresencas(); renderExportList();
+        showToast('Resultados removidos.', 'success');
+      });
+    }
+
+    function resetSystem() {
+      showConfirm('⚠ ATENÇÃO: Apagar TODOS os dados e restaurar o sistema para os valores padrão?', () => {
+        DB.resetData();
+        showToast('Sistema resetado.', 'warning');
+        setTimeout(() => window.location.reload(), 1000);
+      });
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────────
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    function showConfirm(msg, onOk, title = 'Confirmar Ação') {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-msg').textContent = msg;
+      document.getElementById('confirm-ok-btn').onclick = () => { closeModal('modal-confirm'); onOk(); };
+      document.getElementById('modal-confirm').classList.remove('hidden');
+    }
+
+    function showModalError(el, msg) { el.textContent = msg; el.classList.remove('hidden'); }
+
+    function logout() { DB.clearAuth(); window.location.href = 'index.html'; }
+
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('toast-container');
+      const t = document.createElement('div');
+      t.className = `toast ${type}`; t.textContent = msg;
+      c.appendChild(t); setTimeout(() => t.remove(), 4000);
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.add('hidden'); });
+    });
+
+    init();
+  </script>
+</body>
+</html>
