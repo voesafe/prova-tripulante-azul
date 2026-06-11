@@ -919,6 +919,15 @@
       return (n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
     }
 
+    function temaToSubjectKey(tema) {
+      const t = normName(tema);
+      if (t.includes('meteor'))                                       return 'meteorologia';
+      if (t.includes('perf'))                                         return 'performance';
+      if (t.includes('reg'))                                          return 'regulamentos';
+      if (t.includes('gsi') || t.includes('gerenc') || t.includes('anormal') || t.includes('situac')) return 'gsi';
+      return null;
+    }
+
     async function syncPresencasFromAttendance() {
       const btn = document.getElementById('btn-sync-presencas');
       btn.disabled = true;
@@ -930,18 +939,32 @@
         if (!data.ok) throw new Error(data.erro || 'Erro desconhecido');
 
         const { alunos, aulas, presencas } = data;
-        const totalAulas = aulas.filter(a => a.status === 'REALIZADA').length;
-        if (totalAulas === 0) {
+
+        // Group realized aula IDs by prova subject key
+        const aulasBySubject = { regulamentos: [], performance: [], meteorologia: [], gsi: [] };
+        aulas.filter(a => a.status === 'REALIZADA').forEach(a => {
+          const key = temaToSubjectKey(a.tema);
+          if (key) aulasBySubject[key].push(a.id);
+        });
+
+        const totalGeral = Object.values(aulasBySubject).reduce((s, v) => s + v.length, 0);
+        if (totalGeral === 0) {
           showToast('Nenhuma aula realizada encontrada no sistema de presença.', 'warning');
           return;
         }
 
-        // Build lookup: normalized name → freq %
+        // Build per-student, per-subject freq map: { normName → { subKey → pct|null } }
         const freqMap = {};
         alunos.forEach(al => {
-          const pres = presencas.filter(p => p.idAluno === al.id);
-          const count = pres.filter(p => p.status === 'P' || p.status === 'J').length;
-          freqMap[normName(al.nome)] = Math.round(count / totalAulas * 100);
+          const subFreqs = {};
+          Object.entries(aulasBySubject).forEach(([subKey, aulaIds]) => {
+            if (aulaIds.length === 0) { subFreqs[subKey] = null; return; }
+            const count = presencas.filter(p =>
+              p.idAluno === al.id && aulaIds.includes(p.idAula) && (p.status === 'P' || p.status === 'J')
+            ).length;
+            subFreqs[subKey] = Math.round(count / aulaIds.length * 100);
+          });
+          freqMap[normName(al.nome)] = subFreqs;
         });
 
         const students = DB.getStudents();
@@ -950,11 +973,14 @@
         students.forEach(s => {
           const key = normName(s.name);
           if (key in freqMap) {
-            const pct = freqMap[key];
+            const subFreqs = freqMap[key];
             const current = DB.getPresencas(s.id);
             const updated = { ...current };
             SUBJECTS_PRESENCA.forEach(sub => {
-              updated[sub.key] = { ...(updated[sub.key] || {}), participacao: pct };
+              const pct = subFreqs[sub.key];
+              if (pct !== null) {
+                updated[sub.key] = { ...(updated[sub.key] || {}), participacao: pct };
+              }
             });
             DB.setPresencas(s.id, updated);
             matched++;
@@ -965,7 +991,10 @@
 
         renderPresencas();
 
-        const msg = matched + ' aluno(s) sincronizado(s) (' + totalAulas + ' aulas realizadas).'
+        const subSummary = Object.entries(aulasBySubject)
+          .filter(([, ids]) => ids.length > 0)
+          .map(([k, ids]) => `${k}:${ids.length}`).join(', ');
+        const msg = matched + ' aluno(s) sincronizado(s). Aulas por matéria: ' + subSummary + '.'
           + (unmatched.length ? ' Não encontrado(s): ' + unmatched.join(', ') + '.' : '');
         showToast(msg, unmatched.length ? 'warning' : 'success');
       } catch(e) {
