@@ -751,7 +751,9 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 .nav-dot.answered { background: var(--azul-blue); }
+.nav-dot.skipped { background: #f59e0b; }
 .nav-dot.current { background: var(--azul-navy); box-shadow: 0 0 0 3px rgba(0,87,184,0.25); }
+.nav-dot.skipped.current { background: var(--azul-navy); box-shadow: 0 0 0 3px rgba(245,158,11,0.4); }
 
 .exam-action-bar {
   display: flex;

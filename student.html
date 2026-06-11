@@ -307,6 +307,7 @@
     let currentQuestions = [];
     let currentQuestionIndex = 0;
     let examAnswers = {};
+    let visitedQuestions = new Set();
     let examActive = false;
     let timerInterval = null;
     let timeRemaining = 0;
@@ -379,6 +380,7 @@
 
       examAnswers = {};
       currentQuestionIndex = 0;
+      visitedQuestions = new Set();
 
       // Create attempt record
       const attempt = DB.createAttempt(auth.id, currentExamId, cfg.subjectKey, currentQuestions);
@@ -445,6 +447,7 @@
       document.getElementById('exam-answered-count').textContent =
         `${answeredCount} respondida${answeredCount !== 1 ? 's' : ''}`;
 
+      visitedQuestions.add(currentQuestionIndex);
       document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
       document.getElementById('exam-nav-counter').textContent =
         `${currentQuestionIndex + 1} / ${n}`;
@@ -470,6 +473,9 @@
           `).join('')}
         </ul>
         <div class="exam-action-bar">
+          ${selected === undefined
+            ? `<span style="font-size:0.8rem;color:#f59e0b;font-weight:600;margin-right:auto;">⚠ Questão sem resposta</span>`
+            : ''}
           ${isLast
             ? `<button class="btn btn-success btn-lg" onclick="confirmFinish()">✓ Finalizar Prova</button>`
             : `<button class="btn btn-primary btn-lg" onclick="nextQuestion()">Próxima →</button>`
@@ -492,9 +498,13 @@
       currentQuestions.forEach((q, i) => {
         const dot = document.getElementById(`dot_${i}`);
         if (!dot) return;
+        const answered = examAnswers[q.id] !== undefined;
+        const visited = visitedQuestions.has(i);
         dot.className = 'nav-dot';
-        if (examAnswers[q.id] !== undefined) dot.classList.add('answered');
+        if (answered) dot.classList.add('answered');
+        else if (visited) dot.classList.add('skipped');
         if (i === currentQuestionIndex) dot.classList.add('current');
+        dot.title = `Questão ${i + 1}${answered ? ' ✓' : visited ? ' — sem resposta' : ''}`;
       });
     }
 
