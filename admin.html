@@ -978,9 +978,7 @@
             const updated = { ...current };
             SUBJECTS_PRESENCA.forEach(sub => {
               const pct = subFreqs[sub.key];
-              if (pct !== null) {
-                updated[sub.key] = { ...(updated[sub.key] || {}), participacao: pct };
-              }
+              updated[sub.key] = { ...(updated[sub.key] || {}), participacao: pct };
             });
             DB.setPresencas(s.id, updated);
             matched++;
