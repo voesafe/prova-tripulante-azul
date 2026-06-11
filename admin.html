@@ -767,15 +767,15 @@
             </td>`;
           } else {
             return `<td>
-              <div class="presenca-cell" style="flex-direction:row;gap:4px;">
+              <div class="presenca-cell">
                 <input type="number" min="0" max="10" step="0.1"
                   id="nota_${sub.key}_${s.id}" value="${notaVal}"
-                  placeholder="0-10" title="Nota GSI"
-                  style="width:58px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
+                  placeholder="—" title="Nota GSI (0–10)"
+                  style="width:65px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.9rem;font-weight:700;color:var(--azul-navy);">
                 <input type="number" min="0" max="100" step="1"
                   id="part_${sub.key}_${s.id}" value="${partVal}"
                   placeholder="%" title="Participação %"
-                  style="width:58px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
+                  style="width:65px;padding:0.2rem;text-align:center;border:1.5px solid var(--gray-300);border-radius:4px;font-size:0.82rem;">
               </div>
             </td>`;
           }
