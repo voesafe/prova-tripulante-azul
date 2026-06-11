@@ -174,7 +174,12 @@
         <div class="card">
           <div class="card-header">
             <span class="card-title">Presença e Notas por Matéria</span>
-            <span style="font-size:0.82rem;color:var(--gray-400);">Notas das provas são preenchidas automaticamente. Informe a % de participação de cada matéria e a nota do GSI.</span>
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <span style="font-size:0.82rem;color:var(--gray-400);">Notas das provas são preenchidas automaticamente. Informe a % de participação de cada matéria e a nota do GSI.</span>
+              <button class="btn btn-primary" id="btn-sync-presencas" onclick="syncPresencasFromAttendance()" style="font-size:0.78rem;padding:0.3rem 0.9rem;white-space:nowrap;">
+                ↻ Sincronizar Presenças
+              </button>
+            </div>
           </div>
           <div style="overflow-x:auto;" id="presencas-wrapper">
             <div class="text-muted text-center" style="padding:2rem;">Nenhum aluno cadastrado.</div>
@@ -360,6 +365,7 @@
       <div class="modal-body" id="modal-attempt-body"></div>
       <div class="modal-footer">
         <button class="btn btn-outline-danger btn-sm" id="btn-reset-attempt" style="margin-right:auto;">↺ Resetar tentativa</button>
+        <button class="btn btn-outline btn-sm" id="btn-export-attempt-pdf" onclick="exportAttemptPDF()">⬇ Exportar PDF</button>
         <button class="btn btn-outline" onclick="closeModal('modal-attempt')">Fechar</button>
       </div>
     </div>
@@ -560,6 +566,71 @@
         }, 'Resetar Tentativa');
       };
       document.getElementById('modal-attempt').classList.remove('hidden');
+    }
+
+    function exportAttemptPDF() {
+      const a = currentAttemptForReset;
+      if (!a) return;
+      const student = DB.getStudentById(a.studentId);
+      const cfg = DB.getExamConfig(a.examId);
+      const letters = ['A','B','C','D','E'];
+      const statusColor = a.status === 'completed'
+        ? (a.score >= 5 ? '#16a34a' : '#dc2626')
+        : '#6b7280';
+      const statusLabel = a.status === 'completed'
+        ? `Nota: ${a.score.toFixed(1)} / 10 &nbsp;|&nbsp; ${a.correctAnswers} de ${a.totalQuestions} corretas`
+        : 'Prova Invalidada';
+
+      let questionsHtml = '';
+      if (a.questions?.length) {
+        a.questions.forEach((q, idx) => {
+          const ans = a.answers?.[q.id];
+          const isCorrect = ans === q.correct;
+          const borderColor = a.status === 'completed' ? (isCorrect ? '#16a34a' : '#dc2626') : '#d1d5db';
+          questionsHtml += `<div style="border:1.5px solid ${borderColor};border-radius:6px;padding:12px 14px;margin-bottom:10px;page-break-inside:avoid;">
+            <div style="font-weight:600;margin-bottom:6px;font-size:13px;">${idx+1}. ${q.text}</div>
+            <div style="font-size:12px;line-height:1.6;">
+              ${q.options.map((opt, i) => {
+                let style = 'color:#374151;';
+                let prefix = letters[i] + ')';
+                if (i === q.correct) { style = 'color:#16a34a;font-weight:700;'; prefix = '✓ ' + letters[i] + ')'; }
+                if (ans !== undefined && i === ans && !isCorrect) { style = 'color:#dc2626;font-weight:700;'; prefix = '✗ ' + letters[i] + ')'; }
+                return `<div style="${style}">${prefix} ${opt}</div>`;
+              }).join('')}
+              ${ans === undefined ? '<div style="color:#9ca3af;font-style:italic;">Não respondida</div>' : ''}
+            </div>
+          </div>`;
+        });
+      }
+
+      const win = window.open('', '_blank');
+      win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <title>Prova — ${student?.name || 'Aluno'}</title>
+        <style>
+          body{font-family:Arial,sans-serif;margin:32px;color:#111;}
+          h1{font-size:18px;margin-bottom:4px;}
+          .sub{font-size:13px;color:#6b7280;margin-bottom:16px;}
+          .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-bottom:20px;font-size:13px;}
+          .grid .label{color:#6b7280;}
+          .result{font-size:14px;font-weight:700;color:${statusColor};padding:8px 14px;border:2px solid ${statusColor};border-radius:6px;display:inline-block;margin-bottom:20px;}
+          @media print{body{margin:16px;}}
+        </style>
+      </head><body>
+        <h1>Detalhes da Tentativa</h1>
+        <div class="sub">Preparatório Azul — SAFE School of Aviation</div>
+        <div class="grid">
+          <div><span class="label">Aluno:</span><br><strong>${student?.name || 'Desconhecido'}</strong></div>
+          <div><span class="label">Prova:</span><br><strong>${cfg?.name || a.subjectKey}</strong></div>
+          <div><span class="label">Início:</span><br>${new Date(a.startedAt).toLocaleString('pt-BR')}</div>
+          <div><span class="label">Fim:</span><br>${a.finishedAt ? new Date(a.finishedAt).toLocaleString('pt-BR') : '—'}</div>
+        </div>
+        <div class="result">${statusLabel}</div>
+        ${a.status === 'invalidated' ? `<div style="color:#dc2626;margin-bottom:16px;font-size:13px;">Motivo da invalidação: ${a.invalidationReason}</div>` : ''}
+        <h2 style="font-size:14px;margin-bottom:12px;">Questões</h2>
+        ${questionsHtml}
+        <script>window.onload=function(){window.print();}<\/script>
+      </body></html>`);
+      win.document.close();
     }
 
     // ── EXAM CONFIGS ──────────────────────────────────────────────
@@ -817,6 +888,70 @@
       DB.setPresencas(studentId, updated);
       showToast('Presenças salvas.', 'success');
       renderExportList();
+    }
+
+    // ── SYNC PRESENCAS FROM ATTENDANCE SYSTEM ────────────────────
+    const PRESENCA_API = 'https://script.google.com/macros/s/AKfycbxDeoHU_-P0Vnne3k2DbUm0DnsLK8yn-U_Xpb7TPF5JCBzBIWIM-CtUATJg6b4PjaQ/exec';
+
+    function normName(n) {
+      return (n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+    }
+
+    async function syncPresencasFromAttendance() {
+      const btn = document.getElementById('btn-sync-presencas');
+      btn.disabled = true;
+      btn.textContent = 'Sincronizando...';
+      try {
+        const res = await fetch(PRESENCA_API + '?action=init');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.erro || 'Erro desconhecido');
+
+        const { alunos, aulas, presencas } = data;
+        const totalAulas = aulas.filter(a => a.status === 'REALIZADA').length;
+        if (totalAulas === 0) {
+          showToast('Nenhuma aula realizada encontrada no sistema de presença.', 'warning');
+          return;
+        }
+
+        // Build lookup: normalized name → freq %
+        const freqMap = {};
+        alunos.forEach(al => {
+          const pres = presencas.filter(p => p.idAluno === al.id);
+          const count = pres.filter(p => p.status === 'PRESENTE' || p.status === 'JUSTIFICADO').length;
+          freqMap[normName(al.nome)] = Math.round(count / totalAulas * 100);
+        });
+
+        const students = DB.getStudents();
+        let matched = 0, unmatched = [];
+
+        students.forEach(s => {
+          const key = normName(s.name);
+          if (key in freqMap) {
+            const pct = freqMap[key];
+            const current = DB.getPresencas(s.id);
+            const updated = { ...current };
+            SUBJECTS_PRESENCA.forEach(sub => {
+              updated[sub.key] = { ...(updated[sub.key] || {}), participacao: pct };
+            });
+            DB.setPresencas(s.id, updated);
+            matched++;
+          } else {
+            unmatched.push(s.name);
+          }
+        });
+
+        renderPresencas();
+
+        const msg = matched + ' aluno(s) sincronizado(s) (' + totalAulas + ' aulas realizadas).'
+          + (unmatched.length ? ' Não encontrado(s): ' + unmatched.join(', ') + '.' : '');
+        showToast(msg, unmatched.length ? 'warning' : 'success');
+      } catch(e) {
+        showToast('Erro ao sincronizar: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '↻ Sincronizar Presenças';
+      }
     }
 
     // ── EXPORT / PDF ──────────────────────────────────────────────

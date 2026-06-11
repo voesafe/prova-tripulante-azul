@@ -152,12 +152,7 @@
     <div class="exam-nav">
       <button class="btn btn-outline" id="btn-prev" onclick="prevQuestion()">← Anterior</button>
       <div class="exam-nav-dots" id="exam-nav-dots"></div>
-      <div style="display:flex; gap:0.75rem;">
-        <button class="btn btn-outline" id="btn-next" onclick="nextQuestion()">Próxima →</button>
-        <button class="btn btn-success" id="btn-finish" onclick="confirmFinish()" style="display:none;">
-          ✓ Finalizar Prova
-        </button>
-      </div>
+      <span id="exam-nav-counter" style="font-size:0.8rem;color:var(--gray-400);"></span>
     </div>
   </div>
 
@@ -193,7 +188,7 @@
   </div>
 
   <!-- ========== CONFIRM FINISH MODAL ========== -->
-  <div id="confirm-modal" class="modal-overlay hidden">
+  <div id="confirm-modal" class="modal-overlay hidden" style="z-index:9500;">
     <div class="modal" style="max-width:420px;">
       <div class="modal-header">
         <span class="modal-title">Finalizar Prova</span>
@@ -451,16 +446,15 @@
         `${answeredCount} respondida${answeredCount !== 1 ? 's' : ''}`;
 
       document.getElementById('btn-prev').disabled = currentQuestionIndex === 0;
-      document.getElementById('btn-next').style.display =
-        currentQuestionIndex < n - 1 ? 'inline-flex' : 'none';
-      document.getElementById('btn-finish').style.display =
-        currentQuestionIndex === n - 1 ? 'inline-flex' : 'none';
+      document.getElementById('exam-nav-counter').textContent =
+        `${currentQuestionIndex + 1} / ${n}`;
 
+      const isLast = currentQuestionIndex === n - 1;
       const selected = examAnswers[q.id];
 
       const body = document.getElementById('exam-body');
       body.innerHTML = `
-        <div class="question-number">Questão ${currentQuestionIndex + 1}</div>
+        <div class="question-number">Questão ${currentQuestionIndex + 1} de ${n}</div>
         <div class="question-text">${q.text}</div>
         <ul class="options-list">
           ${q.options.map((opt, i) => `
@@ -475,6 +469,12 @@
             </li>
           `).join('')}
         </ul>
+        <div class="exam-action-bar">
+          ${isLast
+            ? `<button class="btn btn-success btn-lg" onclick="confirmFinish()">✓ Finalizar Prova</button>`
+            : `<button class="btn btn-primary btn-lg" onclick="nextQuestion()">Próxima →</button>`
+          }
+        </div>
       `;
 
       updateNavDots();
