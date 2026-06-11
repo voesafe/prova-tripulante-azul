@@ -413,6 +413,8 @@
       renderExportList();
       loadSettingsForm();
       populateFilters();
+      const savedTab = sessionStorage.getItem('adminTab');
+      if (savedTab && TAB_ORDER.includes(savedTab)) switchTab(savedTab);
 
       // Sync from API in background — refresh all panels when done
       if (auth.adminPassword) {
@@ -433,6 +435,7 @@
       document.querySelectorAll('.admin-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${tab}`));
       if (tab === 'presencas') renderPresencas();
       if (tab === 'export') renderExportList();
+      sessionStorage.setItem('adminTab', tab);
     }
 
     // ── STATS ─────────────────────────────────────────────────────

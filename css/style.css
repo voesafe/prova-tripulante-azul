@@ -984,7 +984,8 @@ tbody tr:last-child td { border-bottom: none; }
   gap: 0;
   border-bottom: 2px solid var(--gray-200);
   margin-bottom: 2rem;
-  overflow-x: auto;
+  overflow: visible;
+  flex-wrap: wrap;
 }
 
 .admin-tab {
