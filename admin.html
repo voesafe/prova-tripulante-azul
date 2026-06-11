@@ -388,7 +388,11 @@
   <script>
     DB.init();
     const auth = DB.checkAuth();
-    if (!auth || auth.type !== 'admin') window.location.href = 'index.html';
+    // Se a sessão não tem adminPassword (sessão antiga pré-API), força novo login
+    if (!auth || auth.type !== 'admin' || !auth.adminPassword) {
+      DB.clearAuth();
+      window.location.href = 'index.html';
+    }
 
     let editingStudentId = null;
     let currentAttemptForReset = null;
