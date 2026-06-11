@@ -1,0 +1,139 @@
+Qual é a missão principal do CIMAER (Centro Integrado de Meteorologia Aeronáutica)?
+A. Efetuar apenas observações visuais nos aeródromos.
+B. Coordenar o serviço meteorológico para garantir a segurança e eficiência do tráfego aéreo.
+C. Gerenciar exclusivamente os planos de voo.
+D. Reparar instrumentos de medição meteorológica.
+ANSWER: B
+
+Quantos Centros Mundiais de Previsão de Área (WAFC) existem no mundo?
+A. Apenas um, localizado no Brasil.
+B. Cinco, distribuídos por continente.
+C. Dois (Londres e Washington).
+D. Doze, um para cada região da OACI.
+ANSWER: C
+
+Qual é a velocidade mínima do vento no núcleo de uma corrente de jato (Jet Stream)?
+A. 40 kt
+B. 100 kt
+C. 120 kt
+D. 60 kt
+ANSWER: D
+
+A partir de qual redução de visibilidade horizontal se define o fenômeno de "nevoeiro"?
+A. Menos de 1000 metros.
+B. Entre 1000 e 2000 metros.
+C. Menos de 500 metros.
+D. Menos de 5000 metros.
+ANSWER: A
+
+Qual é a distância de segurança recomendada para evitar um Cumulonimbus (CB)?
+A. 5 Nm
+B. 10 Nm
+C. 20 Nm
+D. 50 Nm
+ANSWER: C
+
+No ciclo de vida de uma trovoada, o que indica a presença de uma "bigorna"?
+A. O início do estágio de cumulus.
+B. O estágio de dissipação.
+C. O estágio de maturação (início das chuvas).
+D. Uma zona de ventos calmos.
+ANSWER: B
+
+O que revelam os raios verticais sobre a estrutura de uma tempestade?
+A. Indicam a parte traseira da tempestade.
+B. Indicam que a tempestade está se dissipando.
+C. Não possuem significado direcional.
+D. Indicam a parte dianteira (frente) da tempestade.
+ANSWER: D
+
+Que tipo de gelo se forma em nuvens estratiformes com pequenas gotículas entre -10°C e -20°C?
+A. Gelo Cristal (claro).
+B. Gelo Escarcha (opaco/branco).
+C. Gelo de mistura.
+D. Geada leve.
+ANSWER: B
+
+O que significa o termo "SCT" (Scattered) em um informe de nebulosidade?
+A. Céu nublado entre 1/8 e 2/8.
+B. Céu nublado entre 5/8 e 7/8.
+C. Céu esparso entre 3/8 e 4/8.
+D. Céu totalmente encoberto (8/8).
+ANSWER: C
+
+Como é codificada a pressão QNH no METAR se o valor medido for 1021,9 hPa?
+A. Q1022
+B. Q10219
+C. Q1021
+D. Q21.9
+ANSWER: C
+
+No código TAF, o que significa o indicador de mudança "BECMG"?
+A. Uma mudança gradual nas condições meteorológicas.
+B. Flutuações temporárias de menos de uma hora.
+C. Um erro na transmissão do dado.
+D. O fim da validade do boletim.
+ANSWER: A
+
+Qual é o sentido de deslocamento predominante da Zona de Convergência Intertropical (ITCZ)?
+A. De Norte para Sul.
+B. De Leste para Oeste.
+C. De Oeste para Leste.
+D. Ela permanece perfeitamente estacionária.
+ANSWER: B
+
+Quais são as condições ideais para a formação de um nevoeiro de radiação?
+A. Ventos fortes e céu encoberto.
+B. Passagem de ar quente sobre oceano frio.
+C. Noite clara, umidade alta e ventos calmos.
+D. Tempestade tropical em curso.
+ANSWER: C
+
+O que o termo "CAVOK" garante em um METAR?
+A. Visibilidade de pelo menos 10 km e nenhuma nuvem abaixo de 5000.
+B. Céu sem nenhuma nuvem em qualquer altitude.
+C. Ausência total de vento.
+D. Visibilidade superior a 50 km.
+ANSWER: A
+
+O que é o "Fogo de Santelmo"?
+A. Um incêndio no motor causado por raio.
+B. Uma descarga elétrica devido à ionização do ar.
+C. Um tipo de reflexo solar nas nuvens.
+D. Uma aurora boreal observada em baixas altitudes.
+ANSWER: B
+
+Quando se utiliza a letra "V" entre duas direções de vento no METAR (ex: 280V350)?
+A. Quando a velocidade do vento é variável.
+B. Quando a direção do vento varia em 60° ou mais.
+C. Para indicar vento vertical.
+D. Para indicar vento verdadeiro (True North).
+ANSWER: B
+
+Quais são os quatro tipos de frentes identificados na meteorologia?
+A. Tropical, polar, marítima e continental.
+B. Seca, úmida, instável e calma.
+C. Fria, quente, oclusa e estacionária.
+D. Alta, média, baixa e vertical.
+ANSWER: C
+
+O que significa o código "VV///" em uma mensagem meteorológica?
+A. Visibilidade vertical de 300 pés.
+B. Céu claro e visibilidade ilimitada.
+C. Céu obscurecido e visibilidade vertical impossível de determinar.
+D. Chuva forte congelante.
+ANSWER: C
+
+Em qual faixa de temperatura o "Gelo Cristal" (claro) é mais frequente?
+A. -10°C a -20°C
+B. Abaixo de -40°C
+C. Entre 0°C e -10°C
+D. Acima de 0°C
+ANSWER: C
+ 
+Em qual intervalo o METAR é geralmente divulgado?
+A. A cada 3 horas.
+B. Somente quando as condições meteorológicas pioram.
+C. A cada decolagem.
+D. Em intervalos regulares.
+ANSWER: D

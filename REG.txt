@@ -1,0 +1,139 @@
+Uma aeronave voando no FL 095 está em:
+A. VFR
+B. IFR
+C. IMC
+D. VFR e VMC
+ANSWER: D
+
+Qual a entrada em órbita para uma aeronave que está aproximando pelo QDM 266 sendo a perna de aproximação da órbita 104 NÃO PADRÃO:
+A. Paralela
+B. Deslocada
+C. Direta
+D. Não sei
+ANSWER: A
+
+A única fonte regulamentar de informação fornecida à tripulação de voo quanto à natureza e quantidade das Mercadorias Perigosas (DG) transportadas como carga e serve para avaliar a gravidade de um incidente a bordo é:
+A. DGR
+B. NOTOC
+C. MDG
+D. Manual de Cargas Perigosas
+ANSWER: B
+
+Para que um NOTAM atinja a sua finalidade, é necessário que esteja disponível ao usuário com pelo menos ______ dias de antecedência da data de início de efetivação,
+A. 3
+B. 5
+C. 7
+D. 9
+ANSWER: C
+
+O acionamento dos motores de uma aeronave em um aeroporto, operando segundo a RBAC 121, só pode acontecer após:
+A. Autorizado pela Torre
+B. Autorizado pelo solo e após a RED LINE
+C. Autorizado pelo órgão responsável e após a RED LINE
+D. Após a RED LINE
+ANSWER: C
+
+Qual a entrada em órbita para uma aeronave que está aproximando no QDM 313º sendo a perna de aproximação da órbita 023 PADRÃO:
+A. Paralela
+B. Deslocada
+C. Direta
+D. Não sei
+ANSWER: C
+
+Uma pista é considerada deslabalanceada quando:
+A. ASDR for maior que a TODR
+B. ASDA for maior que a TODA
+C. ASDR for menor que a TODR
+D. ASDA for menor que a TODA
+ANSWER: C
+
+O gradiente mínimo que deve ser empregado por uma aeronave trimotora no segundo segmento de decolagem é de: 
+A. 0.024
+B. 0.027
+C. 0.03
+D. 0.05
+ANSWER: B
+
+O CBA foi formulada no Congresso Nacional e sancionada pelo Presidente da República em:
+A. 16 de dezembro de 1986
+B. 17 de dezembro de 1986
+C. 18 de dezembro de 1986
+D. 19 de dezembro de 1986
+ANSWER: D
+
+O CÓDIGO BRASILEIRO DE AERONÁUTICA tem como número de lei:
+A. Lei nº 7656
+B. Lei nº 7565
+C. Lei nº 7566
+D. Lei nº 7655
+ANSWER: B
+
+O Direito Aeronáutico é regulado pelo(s):
+A. Presidente da República
+B. ANAC e suas gerências
+C. Tratados, Convenções e Atos Internacionais
+D. Anexos
+ANSWER: C
+
+No cálculo da ACELERATE STOP DISTANCE, utiliza-se o comprimento da pista:
+A. Acrescido da Clearway
+B. Acrescido da Stopway
+C. Acrescido da Takeoff Distance Available
+D. Acrescido da Landing Distance Available
+ANSWER: B
+
+Em uma taxiway de saída rápida tem uma velocidade considerada ótima até a primeira RETIL. Qual é esta velocidade?
+A. 100 Kt
+B. 80 kt
+C. 70 kt
+D. 60 kt
+ANSWER: D
+
+A dimensão máxima da Clearway de uma pista é de:
+A. 50% da TORA
+B. 50% da TODA
+C. 0% da TORA
+D. 50% da LDA
+ANSWER: A
+
+Caso haja a suspeita que uma aeronave está sendo objeto de interferência ilícita, a mesma se encontrará em qual estado de emergência:
+A. INCERFA
+B. ALERFA
+C. DETRESFA
+D. DÚVIDA
+ANSWER: B
+
+Após a chegada da LOAD, o peso que será considerado como o de decolagem é o:
+A. ETOW
+B. MTOW
+C. TOW
+D. ATOW
+ANSWER: D
+
+Em um circuito visual, a aeronave pode ingressar na perna do vento quando:
+A. Após 400 pés
+B. Após 500 pés
+C. Após 1000 pés
+D. Quando atingir a altura do circuito
+ANSWER: D
+
+Uma aeronave com peso máximo de decolagem de 130.000 kg tem a categoria de esteira de turbulência:
+A. Leve
+B. Média
+C. Pesada
+D. Super
+ANSWER: C
+
+Não devem ser realizadas decolagens em pistas quando a camada de água ou gelo tiver uma espessura maior que:
+A. 10 mm
+B. 11mm
+C. 12mm
+D. 13mm
+ANSWER: D
+
+Quando uma aeronave tiver um evento de saída de pista, de maneira lateral, recebe o nome de:
+A. Overrun
+B. Veer off
+C. Runway incursion
+D. Incidente
+ANSWER: B

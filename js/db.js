@@ -53,7 +53,7 @@ const DB = {
       s.email.toLowerCase() === email.toLowerCase() && s.cpf === cpfClean
     );
     if (!student) return null;
-    const auth = { type: 'student', id: student.id, name: student.name, email: student.email };
+    const auth = { type: 'student', id: student.id, name: student.name, email: student.email, cpf: cpfClean };
     this.setAuth(auth);
     return auth;
   },
@@ -61,7 +61,7 @@ const DB = {
   loginAdmin(username, password) {
     const s = this.get(this.KEYS.SETTINGS);
     if (s.adminUsername === username && s.adminPassword === password) {
-      const auth = { type: 'admin', name: 'Administrador' };
+      const auth = { type: 'admin', name: 'Administrador', adminPassword: password };
       this.setAuth(auth);
       return auth;
     }
@@ -89,6 +89,7 @@ const DB = {
     };
     students.push(student);
     this.set(this.KEYS.STUDENTS, students);
+    this._pushAdminFields({ students });
     return student;
   },
 
@@ -99,11 +100,14 @@ const DB = {
     if (fields.cpf) fields.cpf = fields.cpf.replace(/\D/g, '');
     students[idx] = { ...students[idx], ...fields };
     this.set(this.KEYS.STUDENTS, students);
+    this._pushAdminFields({ students });
     return students[idx];
   },
 
   deleteStudent(id) {
-    this.set(this.KEYS.STUDENTS, this.getStudents().filter(s => s.id !== id));
+    const students = this.getStudents().filter(s => s.id !== id);
+    this.set(this.KEYS.STUDENTS, students);
+    this._pushAdminFields({ students });
   },
 
   // CSV: nome,email,cpf,codigoAnac (anac opcional)
@@ -121,6 +125,7 @@ const DB = {
         results.errors.push(`Linha ${i+1}: ${e.message}`);
       }
     });
+    if (results.success > 0) this._pushAdminFields({ students: this.getStudents() });
     return results;
   },
 
@@ -134,6 +139,7 @@ const DB = {
     if (idx < 0) throw new Error('Prova não encontrada');
     configs[idx] = { ...configs[idx], ...fields };
     this.set(this.KEYS.CONFIGS, configs);
+    this._pushAdminFields({ examConfigs: configs });
     return configs[idx];
   },
 
@@ -213,6 +219,7 @@ const DB = {
     att.correctAnswers = correct;
     att.score = parseFloat(((correct / att.totalQuestions) * 10).toFixed(2));
     this.set(this.KEYS.ATTEMPTS, all);
+    this._pushAttempt(all[idx]);
     return all[idx];
   },
 
@@ -226,12 +233,14 @@ const DB = {
     all[idx].score = 0;
     all[idx].correctAnswers = 0;
     this.set(this.KEYS.ATTEMPTS, all);
+    this._pushAttempt(all[idx]);
     return all[idx];
   },
 
   resetStudentAttempt(studentId, subjectKey) {
     const all = this.getAttempts().filter(a => !(a.studentId === studentId && a.subjectKey === subjectKey));
     this.set(this.KEYS.ATTEMPTS, all);
+    this._pushAdminFields({ attempts: all });
   },
 
   // ── PRESENÇAS ─────────────────────────────────────────────────────────
@@ -250,11 +259,16 @@ const DB = {
     const all = this.getAllPresencas();
     all[studentId] = data;
     this.set(this.KEYS.PRESENCAS, all);
+    this._pushAdminFields({ presencas: all });
   },
 
   // ── SETTINGS ──────────────────────────────────────────────────────────
   getSettings()          { return this.get(this.KEYS.SETTINGS) || {}; },
-  updateSettings(fields) { this.set(this.KEYS.SETTINGS, { ...this.getSettings(), ...fields }); },
+  updateSettings(fields) {
+    const updated = { ...this.getSettings(), ...fields };
+    this.set(this.KEYS.SETTINGS, updated);
+    this._pushAdminFields({ settings: updated });
+  },
 
   // ── REPORT DATA ───────────────────────────────────────────────────────
   // Returns complete report data for a student (used for PDF generation)
@@ -291,5 +305,62 @@ const DB = {
       mediaNotas,
       mediaPart
     };
+  },
+
+  // ── API SYNC ──────────────────────────────────────────────────────────
+  _apiReady() {
+    return typeof API !== 'undefined' && API.URL !== 'APPS_SCRIPT_URL_AQUI';
+  },
+
+  // Fetches all admin data from API into localStorage
+  async syncFromAPI(adminPassword) {
+    if (!this._apiReady()) return false;
+    try {
+      const res = await API.adminLoad(adminPassword);
+      if (!res.ok) return false;
+      if (res.students)    this.set(this.KEYS.STUDENTS, res.students);
+      if (res.attempts)    this.set(this.KEYS.ATTEMPTS, res.attempts);
+      if (res.presencas)   this.set(this.KEYS.PRESENCAS, res.presencas);
+      if (res.examConfigs) this.set(this.KEYS.CONFIGS, res.examConfigs);
+      if (res.settings)    this.set(this.KEYS.SETTINGS, res.settings);
+      localStorage.setItem(this.KEYS.INIT, 'true');
+      return true;
+    } catch(e) { console.warn('[Sync] Offline:', e.message); return false; }
+  },
+
+  // Fetches this student's attempts + public config from API
+  async syncStudentFromAPI(studentId, cpf) {
+    if (!this._apiReady()) return;
+    try {
+      const [dataRes, cfgRes] = await Promise.all([
+        API.getStudentData(studentId, cpf),
+        API.getPublicConfig()
+      ]);
+      if (dataRes.ok && dataRes.attempts) {
+        const all = this.getAttempts().filter(a => a.studentId !== studentId);
+        dataRes.attempts.forEach(a => all.push(a));
+        this.set(this.KEYS.ATTEMPTS, all);
+      }
+      if (cfgRes.ok && cfgRes.examConfigs) {
+        this.set(this.KEYS.CONFIGS, cfgRes.examConfigs);
+      }
+    } catch(e) { console.warn('[Sync] Offline:', e.message); }
+  },
+
+  // Pushes specific admin data fields to API (fire-and-forget)
+  _pushAdminFields(fields) {
+    if (!this._apiReady()) return;
+    const auth = this.checkAuth();
+    const pw = auth?.adminPassword;
+    if (!pw) return;
+    API.adminSave(pw, fields).catch(e => console.warn('[Push] Falhou:', e.message));
+  },
+
+  // Pushes a single attempt to API from the student page (fire-and-forget)
+  _pushAttempt(attempt) {
+    if (!this._apiReady()) return;
+    const auth = this.checkAuth();
+    if (!auth?.id || !auth?.cpf) return;
+    API.saveAttempt(auth.id, auth.cpf, attempt).catch(e => console.warn('[Push attempt] Falhou:', e.message));
   }
 };

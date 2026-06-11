@@ -382,6 +382,7 @@
   <div id="toast-container"></div>
 
   <script src="js/questions.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/db.js"></script>
   <script>
     DB.init();
@@ -401,6 +402,17 @@
       renderExportList();
       loadSettingsForm();
       populateFilters();
+
+      // Sync from API in background — refresh all panels when done
+      if (auth.adminPassword) {
+        DB.syncFromAPI(auth.adminPassword).then(ok => {
+          if (ok) {
+            renderStats(); renderResults(); renderExamConfigs();
+            renderStudents(); renderPresencas(); renderExportList();
+            loadSettingsForm(); populateFilters();
+          }
+        }).catch(() => {});
+      }
     }
 
     // ── TABS ──────────────────────────────────────────────────────
@@ -450,6 +462,9 @@
     function populateFilters() {
       const examSel = document.getElementById('filter-exam');
       const studentSel = document.getElementById('filter-student');
+      // Clear dynamic options (keep the first "all" option)
+      while (examSel.options.length > 1) examSel.remove(1);
+      while (studentSel.options.length > 1) studentSel.remove(1);
       DB.getExamConfigs().forEach(cfg => {
         const o = document.createElement('option'); o.value = cfg.id; o.textContent = cfg.name; examSel.appendChild(o);
       });
@@ -977,6 +992,7 @@
     function clearAllAttempts() {
       showConfirm('Apagar TODOS os resultados de provas? Esta ação não pode ser desfeita.', () => {
         DB.set(DB.KEYS.ATTEMPTS, []);
+        DB._pushAdminFields({ attempts: [] });
         renderResults(); renderStats(); renderPresencas(); renderExportList();
         showToast('Resultados removidos.', 'success');
       });

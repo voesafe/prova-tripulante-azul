@@ -1,0 +1,161 @@
+Qual é o combustível mínimo para aeronaves de transporte regular, considerando que a empresa possua um sistema de monitoramento de combustível?
+ A. AB + BC + 45 minutos
+ B. AB + 5%AB/5min + BC + 30 minutos
+ C. AB + 5%AB/5min + BC + 45 minutos
+ D. AB + BC + 30 minutos
+ANSWER: B
+
+Qual é critério para se definir um MTOW (Maximum Takeoff Weight)?
+ A. É definido pelo peso máximo que a raiz da asa consegue suportar a torção sem haver um dano estrutural
+ B. É definido pelo peso máximo que o trem de pouso consegue suportar o impacto do pouso, considerando uma razão de descida de 10ft/segundo
+ C. É definido pelo peso máximo que o trem de pouso consegue suportar o impacto do pouso, considerando uma razão de descida de 6ft/segundo
+ D. É definido pelo peso máximo que o trem de pouso consegue suportar o impacto do pouso, considerando uma razão de descida de 50ft/segundo
+ANSWER: C
+
+Qual é a ordem do código PCN das pistas e taxiways?
+ A. ACN - Tipo de pavimento - Resistência do Subleito - Pressão dos Pneus - Método de Avaliação
+ B. ACN - Tipo de pavimento - Pressão dos Pneus - Resistência do Subleito - Método de Avaliação
+ C. ACN - Pressão dos Pneus - Tipo de pavimento - Resistência do Subleito - Método de Avaliação
+ D. Nenhuma das respostas anteriores
+ANSWER: A
+
+Como se define uma corda média aerodinâmica?
+ A. Pelo ponto médio entre a raiz da asa e a ponta da asa
+ B. Pelo valor de corda que, multiplicado pela envergadura, resulta na área da asa
+ C. Pelo ponto médio da envergadura da asa
+ D. Pelo ponto médio do avião
+ANSWER: B
+
+Duas aeronaves idênticas voam para um mesmo destino. Supondo que ambas fizeram exatamente a mesma rota. Por que uma delas gastou menos combustível que a outra?
+ A. Porque a aeronave que gastou menos combustível estava com o CG mais traseiro
+ B. Porque a aeronave que gastou menos combustível estava com o CG mais dianteiro
+ C. Porque a aeronave que gastou mais combustível estava com o CG mais traseiro
+ D. Porque a aeronave que gastou mais combustível estava com o CG mais dianteiro
+ANSWER: C
+
+TORA + Stopway =
+ A. TODA
+ B. ASDA
+ C. LDA
+ D. TORA
+ANSWER: B
+
+Considere uma aeronave decolando com todos os motores operantes. Por que ela cruza a cabeceira oposta bem acima de 35ft?
+ A. Porque em uma decolagem sem falha de motor deve haver uma sobra de pelo menos 15% de pista, caso a pista esteja seca
+ B. Porque quando a aeronave está com todos os motores operando, a taxa de aceleração será maior, o que a faz consumir menos pista
+ C. Porque em uma decolagem sem falha de motor deve haver uma sobra de pelo menos 15% de pista, independente da condição da pista
+ D. Porque em uma decolagem sem falha de motor deve haver uma sobra de pelo menos 15% de pista, caso a pista esteja contaminada
+ANSWER: C
+
+Qual é a largura mínima da RESA?
+ A. O dobro da largura da pista
+ B. A largura da pista
+ C. 150m para cada lado do eixo da pista
+ D. 300m
+ANSWER: A
+
+Em que momento antes da Vs deve ser acionado um Stall Warning de uma aeronave não classificada como “Transport Category Aircraft”?
+ A. 5KT antes da Vs
+ B. 5KT ou 5% antes da Vs, o que for menor
+ C. 5KT ou 5% antes da Vs, o que for maior
+ D. Na VS
+ANSWER: A
+
+O que é a VMCG?
+ A. Velocidade mínima de controle no solo
+ B. Velocidade mínima de controle no ar
+ C. Velocidade mínima de controle durante o pouso
+ D. Velocidade de estol
+ANSWER: A
+
+O que é a V1?
+ A. Velocidade considerada para a falha de motor da aeronave
+ B. Velocidade considerada para a tomada de decisão do piloto
+ C. Velocidade de rejeição de decolagem
+ D. Velocidade de estol
+ANSWER: B
+
+Por que existe a VMBE?
+ A. Para que se defina uma velocidade máxima para o conforto dos passageiros
+ B. Para que se defina uma velocidade máxima em que os pneus conseguem rotacionar sem que eles estourem
+ C. Para que se defina uma velocidade máxima em que a aeronave pode rodar sem sofrer danos estruturais no trem de pouso
+ D. Para que se defina uma velocidade máxima em que os freios conseguem suportar a frenagem da aeronave
+ANSWER: D
+
+Qual são os valores mínimo e máximo da Acceleration Altitude?
+ A. 400FT e 1.500FT
+ B. 400FT e 1.000FT
+ C. 200FT e 1.500FT
+ D. 200FT e 1.000FT
+ANSWER: A
+
+Como é calculado o limitante de pista?
+ A. Se considera o maior comprimento necessário entre 3 situações: decolagem com falha de motor, rejeição de decolagem; e decolagem com todos os motores funcionando
+ B. Se considera o maior comprimento necessário entre 3 situações: decolagem com falha de motor; rejeição de decolagem; e decolagem com todos os motores funcionando + 5%
+ C. Se considera o maior comprimento necessário entre 3 situações: decolagem com falha de motor; rejeição de decolagem; e decolagem com todos os motores funcionando + 15%
+ D. Se considera o maior comprimento necessário entre 2 situações: decolagem com falha de motor, e rejeição de decolagem
+ANSWER: C
+
+Qual é a definição de pista molhada?
+ A. Quando menos de 25% da pista estiver coberta por umidade visível de espessura inferior a 3mm
+ B. Quando mais de 25% da pista estiver coberta por umidade visível de espessura inferior a 3mm
+ C. Quando mais de 25% da pista estiver coberta por umidade visível de espessura superior a 3mm
+ D. Quando menos de 25% da pista estiver coberta por umidade visível de espessura superior a 3mm
+ANSWER: B
+
+Qual é a definição de pista contaminada?
+ A. Quando mais de 50% da pista estiver coberta por umidade visível de espessura superior a 3mm
+ B. Quando mais de 50% da pista estiver coberta por umidade visível de espessura inferior a 3mm
+ C. Quando mais de 25% da pista estiver coberta por umidade visível de espessura inferior a 3mm
+ D. Quando mais de 25% da pista estiver coberta por umidade visível de espessura superior a 3mm
+ANSWER: C
+
+Qual é a velocidade utilizada em voo de cruzeiro cujo objetivo seja atingir a maior distância?
+ A. MRC: Maximum Range Cruise
+ B. LRC: Long Range Cruise
+ C. ME: Maximum Endurance
+ D. MCT: Maximum Continuous Thrust
+ANSWER: A
+
+Qual é objetivo do procedimento de Step Climb?
+ A. Permanecer o mais próximo possível do FL Ótimo durante todo o voo
+ B. Permanecer o mais próximo possível da Altitude Capability durante todo o voo
+ C. Permanecer o mais próximo possível do teto operacional durante todo o voo
+ D. Permanecer o mais próximo possível do Teto Operacional durante todo o voo
+ANSWER: A
+
+Qual é a relação da VREF com o peso da aeronave?
+ A. A VREF não altera com o peso
+ B. Quanto maior o peso da aeronave, maior VREF
+ C. Quanto maior o peso da aeronave, menor VREF
+ D. Quanto menor o peso da aeronave, maior VREF
+ANSWER: B
+
+O que significa ETOPS?
+ A. Extended Twin-Engine Operations
+ B. Extended Single-Engine Operations
+ C. Extended Time Operations
+ D. Extended Range Twin-Engine Operations
+ANSWER: D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

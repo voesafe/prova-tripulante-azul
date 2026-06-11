@@ -103,6 +103,7 @@
   <div id="toast-container"></div>
 
   <script src="js/questions.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/db.js"></script>
   <script>
     DB.init();
@@ -122,15 +123,30 @@
       document.getElementById('tab-admin').classList.toggle('active', tab === 'admin');
     }
 
-    function loginAluno() {
+    async function loginAluno() {
       const email = document.getElementById('aluno-email').value.trim();
       const cpf = document.getElementById('aluno-cpf').value.trim().replace(/\D/g, '');
       const errEl = document.getElementById('aluno-error');
+      const btn = document.querySelector('#tab-aluno .btn');
 
-      if (!email || !cpf) {
-        showError(errEl, 'Preencha e-mail e CPF.');
-        return;
-      }
+      if (!email || !cpf) { showError(errEl, 'Preencha e-mail e CPF.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      try {
+        if (DB._apiReady()) {
+          const res = await API.loginStudent(email, cpf);
+          if (res.ok) {
+            // Set auth with cpf stored (needed for student sync)
+            const auth = { type: 'student', id: res.student.id, name: res.student.name, email: res.student.email, cpf };
+            DB.setAuth(auth);
+            window.location.href = 'student.html';
+            return;
+          } else {
+            showError(errEl, 'E-mail ou CPF incorretos. Verifique seus dados ou entre em contato com o administrador.');
+            return;
+          }
+        }
+      } catch(e) { /* API indisponível — tenta localStorage */ }
 
       const auth = DB.loginStudent(email, cpf);
       if (!auth) {
@@ -138,24 +154,37 @@
         return;
       }
       window.location.href = 'student.html';
+      btn.disabled = false; btn.textContent = 'Entrar';
     }
 
-    function loginAdmin() {
+    async function loginAdmin() {
       const user = document.getElementById('admin-user').value.trim();
       const pass = document.getElementById('admin-pass').value.trim();
       const errEl = document.getElementById('admin-error');
+      const btn = document.querySelector('#tab-admin .btn');
 
-      if (!user || !pass) {
-        showError(errEl, 'Preencha usuário e senha.');
-        return;
-      }
+      if (!user || !pass) { showError(errEl, 'Preencha usuário e senha.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Verificando...';
+      try {
+        if (DB._apiReady()) {
+          const res = await API.loginAdmin(user, pass);
+          if (res.ok) {
+            const auth = { type: 'admin', name: 'Administrador', adminPassword: pass };
+            DB.setAuth(auth);
+            window.location.href = 'admin.html';
+            return;
+          } else {
+            showError(errEl, 'Usuário ou senha incorretos.');
+            return;
+          }
+        }
+      } catch(e) { /* API indisponível — tenta localStorage */ }
 
       const auth = DB.loginAdmin(user, pass);
-      if (!auth) {
-        showError(errEl, 'Usuário ou senha incorretos.');
-        return;
-      }
+      if (!auth) { showError(errEl, 'Usuário ou senha incorretos.'); return; }
       window.location.href = 'admin.html';
+      btn.disabled = false; btn.textContent = 'Entrar como Admin';
     }
 
     function showError(el, msg) {

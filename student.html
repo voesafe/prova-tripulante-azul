@@ -211,6 +211,7 @@
   <div id="toast-container"></div>
 
   <script src="js/questions.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/db.js"></script>
   <script>
     // ============================================================
@@ -224,6 +225,11 @@
 
     document.getElementById('topbar-user-name').textContent = auth.name;
     document.getElementById('dash-greeting').textContent = `Olá, ${auth.name.split(' ')[0]}!`;
+
+    // Sync from API in background — re-render dashboard when done
+    if (auth.cpf) {
+      DB.syncStudentFromAPI(auth.id, auth.cpf).then(() => renderDashboard()).catch(() => {});
+    }
 
     // ============================================================
     // DASHBOARD RENDER
