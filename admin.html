@@ -536,18 +536,33 @@
         html += `<h4 style="font-weight:700;margin-bottom:1rem;">Questões</h4>`;
         a.questions.forEach((q, idx) => {
           const ans = a.answers?.[q.id];
-          const isCorrect = ans === q.correct;
-          html += `<div class="question-preview" style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:4px;padding:1rem;margin-bottom:0.75rem;border-color:${a.status==='completed'?(isCorrect?'var(--success)':'var(--danger)'):'var(--gray-200)'}">
-            <div style="font-weight:600;margin-bottom:0.5rem;">${idx+1}. ${q.text}</div>
-            <div style="font-size:0.82rem;">
+          const unanswered = ans === undefined;
+          const isCorrect = !unanswered && ans === q.correct;
+          let borderColor = 'var(--gray-200)';
+          let badge = '';
+          if (a.status === 'completed') {
+            if (unanswered) {
+              borderColor = '#f59e0b';
+              badge = `<span style="float:right;font-size:0.72rem;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:99px;">⚠ Sem resposta</span>`;
+            } else if (isCorrect) {
+              borderColor = 'var(--success)';
+              badge = `<span style="float:right;font-size:0.72rem;font-weight:700;background:var(--success-bg);color:var(--success);padding:2px 8px;border-radius:99px;">✓ Correto</span>`;
+            } else {
+              borderColor = 'var(--danger)';
+              badge = `<span style="float:right;font-size:0.72rem;font-weight:700;background:var(--danger-bg);color:var(--danger);padding:2px 8px;border-radius:99px;">✗ Incorreto</span>`;
+            }
+          }
+          html += `<div style="background:var(--gray-50);border:1.5px solid ${borderColor};border-radius:4px;padding:1rem;margin-bottom:0.75rem;">
+            <div style="font-weight:600;margin-bottom:0.5rem;">${badge}${idx+1}. ${q.text}</div>
+            <div style="font-size:0.82rem;clear:both;">
               ${q.options.map((opt, i) => {
                 let style = '';
                 let marker = letters[i];
                 if (i === q.correct) { style = 'color:var(--success);font-weight:700;'; marker = '✓ '+letters[i]; }
-                if (ans !== undefined && i === ans && !isCorrect) { style = 'color:var(--danger);font-weight:700;'; marker = '✗ '+letters[i]; }
+                if (!unanswered && i === ans && !isCorrect) { style = 'color:var(--danger);font-weight:700;'; marker = '✗ '+letters[i]; }
                 return `<div style="${style}">${marker}) ${opt}</div>`;
               }).join('')}
-              ${ans === undefined ? '<div style="color:var(--gray-400);font-style:italic;">Não respondida</div>' : ''}
+              ${unanswered ? '<div style="margin-top:6px;color:#92400e;font-weight:600;font-size:0.78rem;">Aluno não selecionou nenhuma alternativa — contada como errada.</div>' : ''}
             </div>
           </div>`;
         });
@@ -585,19 +600,26 @@
       if (a.questions?.length) {
         a.questions.forEach((q, idx) => {
           const ans = a.answers?.[q.id];
-          const isCorrect = ans === q.correct;
-          const borderColor = a.status === 'completed' ? (isCorrect ? '#16a34a' : '#dc2626') : '#d1d5db';
+          const unanswered = ans === undefined;
+          const isCorrect = !unanswered && ans === q.correct;
+          let borderColor = '#d1d5db';
+          let badge = '';
+          if (a.status === 'completed') {
+            if (unanswered)      { borderColor = '#f59e0b'; badge = `<span style="float:right;font-size:11px;font-weight:700;background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:99px;">⚠ Sem resposta</span>`; }
+            else if (isCorrect)  { borderColor = '#16a34a'; badge = `<span style="float:right;font-size:11px;font-weight:700;background:#dcfce7;color:#16a34a;padding:1px 7px;border-radius:99px;">✓ Correto</span>`; }
+            else                 { borderColor = '#dc2626'; badge = `<span style="float:right;font-size:11px;font-weight:700;background:#fee2e2;color:#dc2626;padding:1px 7px;border-radius:99px;">✗ Incorreto</span>`; }
+          }
           questionsHtml += `<div style="border:1.5px solid ${borderColor};border-radius:6px;padding:12px 14px;margin-bottom:10px;page-break-inside:avoid;">
-            <div style="font-weight:600;margin-bottom:6px;font-size:13px;">${idx+1}. ${q.text}</div>
-            <div style="font-size:12px;line-height:1.6;">
+            <div style="font-weight:600;margin-bottom:6px;font-size:13px;">${badge}${idx+1}. ${q.text}</div>
+            <div style="font-size:12px;line-height:1.6;clear:both;">
               ${q.options.map((opt, i) => {
                 let style = 'color:#374151;';
                 let prefix = letters[i] + ')';
                 if (i === q.correct) { style = 'color:#16a34a;font-weight:700;'; prefix = '✓ ' + letters[i] + ')'; }
-                if (ans !== undefined && i === ans && !isCorrect) { style = 'color:#dc2626;font-weight:700;'; prefix = '✗ ' + letters[i] + ')'; }
+                if (!unanswered && i === ans && !isCorrect) { style = 'color:#dc2626;font-weight:700;'; prefix = '✗ ' + letters[i] + ')'; }
                 return `<div style="${style}">${prefix} ${opt}</div>`;
               }).join('')}
-              ${ans === undefined ? '<div style="color:#9ca3af;font-style:italic;">Não respondida</div>' : ''}
+              ${unanswered ? '<div style="margin-top:5px;color:#92400e;font-weight:600;">Aluno não respondeu — contada como errada.</div>' : ''}
             </div>
           </div>`;
         });
