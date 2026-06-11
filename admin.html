@@ -302,7 +302,9 @@
         <div id="add-student-error" class="alert alert-danger hidden"></div>
         <div class="form-group">
           <label class="form-label">Nome Completo</label>
-          <input class="form-control" type="text" id="st-name" placeholder="Ex: João da Silva">
+          <input class="form-control" type="text" id="st-name" placeholder="Ex: João da Silva" list="presenca-alunos-list" autocomplete="off">
+          <datalist id="presenca-alunos-list"></datalist>
+          <span id="st-name-hint" style="font-size:0.75rem;color:var(--gray-400);display:none;">Carregando sugestões do sistema de presenças...</span>
         </div>
         <div class="form-group">
           <label class="form-label">E-mail (login)</label>
@@ -739,6 +741,30 @@
       ['st-name','st-email','st-cpf','st-anac'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('add-student-error').classList.add('hidden');
       document.getElementById('modal-add-student').classList.remove('hidden');
+      loadPresencaAlunos();
+    }
+
+    async function loadPresencaAlunos() {
+      const datalist = document.getElementById('presenca-alunos-list');
+      const hint = document.getElementById('st-name-hint');
+      datalist.innerHTML = '';
+      hint.style.display = 'inline';
+      hint.textContent = 'Carregando sugestões do sistema de presenças...';
+      try {
+        const res = await fetch(PRESENCA_API + '?action=init');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!data.ok) throw new Error();
+        const ativos = data.alunos.filter(a => a.status === 'ATIVO');
+        ativos.forEach(al => {
+          const opt = document.createElement('option');
+          opt.value = al.nome;
+          datalist.appendChild(opt);
+        });
+        hint.textContent = ativos.length + ' aluno(s) disponível(is) no sistema de presenças.';
+      } catch {
+        hint.textContent = 'Não foi possível carregar sugestões (sistema offline).';
+      }
     }
 
     function openEditStudentModal(id) {
