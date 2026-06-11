@@ -940,7 +940,7 @@
         const freqMap = {};
         alunos.forEach(al => {
           const pres = presencas.filter(p => p.idAluno === al.id);
-          const count = pres.filter(p => p.status === 'PRESENTE' || p.status === 'JUSTIFICADO').length;
+          const count = pres.filter(p => p.status === 'P' || p.status === 'J').length;
           freqMap[normName(al.nome)] = Math.round(count / totalAulas * 100);
         });
 
