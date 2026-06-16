@@ -76,9 +76,6 @@
     .pdf-totais td { font-weight: 700; font-size: 9.5pt; padding: 5pt 8pt; }
     .pdf-footer { margin-top: 14pt; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #d0daea; padding-top: 8pt; }
     .pdf-emissao { font-size: 8pt; color: #555; }
-    .pdf-assinatura { text-align: center; }
-    .pdf-assinatura-line { border-top: 1px solid #333; width: 180pt; margin: 0 auto; }
-    .pdf-assinatura-label { font-size: 8pt; color: #555; margin-top: 2pt; }
     .pdf-nota-pass { color: #10b981; }
     .pdf-nota-fail { color: #ef4444; }
     .pdf-nota-empty { color: #aaa; }
@@ -1161,10 +1158,6 @@
 
         <div class="pdf-footer">
           <div class="pdf-emissao">Data de Emissão: ${emissao}</div>
-          <div class="pdf-assinatura">
-            <div class="pdf-assinatura-line"></div>
-            <div class="pdf-assinatura-label">${ciac} — Responsável pelo Treinamento</div>
-          </div>
         </div>
       </div>`;
     }
