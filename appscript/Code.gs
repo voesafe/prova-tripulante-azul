@@ -3,7 +3,7 @@
 // Backend via Google Apps Script + Google Sheets
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SS_ID = '1iQvLT5xu9Vl9TmB8DYpQme3elOdtwDYtEIedQp1Y_5g';
+const SS_ID = '1oUSlNF0SbSkog9GedEHkz2t7nHFo9vHMWcjXiYNXk0o';
 
 // ── ENTRY POINTS ─────────────────────────────────────────────────────────────
 

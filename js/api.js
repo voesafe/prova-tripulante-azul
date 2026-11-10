@@ -4,7 +4,7 @@
 
 const API = (() => {
 
-  const URL = 'https://script.google.com/macros/s/AKfycby3Q6sjM2qxbMbu5j3-cBcLM4B1KAgNwK2PzZe6ccIp2YVGpwxuDCFTKaYRPylglvv-/exec';
+  const URL = 'https://script.google.com/macros/s/AKfycbxkuvGdnJWIHo3_vjUhVcrwPxrbKjif13oczsIyw98HYn8UuKmUC-Ao7rDVnslQ7Ye3ig/exec';
 
   async function call(data) {
     const res = await fetch(URL, {
